@@ -5,7 +5,7 @@
     background: white; 
     border-radius: 10px; 
     height: 34px; 
-
+    width: 600px; /* Добавьте фиксированную ширину как в HTML */
     overflow: hidden; 
     margin-right: 15px; 
   }

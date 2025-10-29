@@ -1,5 +1,6 @@
 // components/Header/Header.tsx
 import './Header.css';
+import logo0 from '../../assets/icon-logo.f2ce70f.svg'
 
 export default function Header() {
   return (
@@ -10,7 +11,7 @@ export default function Header() {
             <div className="logo">
               <span className="logo-text">Устройства для BMW</span>
               <div className="logo-small">
-                <img src="http://localhost:9000/lab1/img/icon-logo.f2ce70f.svg" className="logo-small-image" alt="BMW Logo" />
+                <img src={logo0} className="logo-small-image" alt="BMW Logo" />
               </div>
             </div>
           </a>

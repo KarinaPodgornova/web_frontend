@@ -33,14 +33,15 @@ export default function DeviceCard({ device }: { device: Device }) {
             <div className="product-image">
                 <img 
                     src={imageError ? defaultDeviceImage : imageUrl}
-                    alt={device.title}
+                    alt={device.name}
                     onError={handleImageError}
                 />
             </div>
             <div className="product-content">
-                <div className="product-title">{device.title}</div>
-                <div className="product-description">Мощность: {device.power}</div>
-                <Link to={`/device/${device.id}`} className="add-to-cart">
+                <div className="product-title">{device.name}</div>
+                <div className="product-description">Мощность: {device.power_nominal} Вт</div>
+               
+                <Link to={`/devices/${device.device_id}`} className="add-to-cart">
                     Подробнее
                 </Link>
             </div>

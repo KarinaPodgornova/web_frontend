@@ -2,7 +2,7 @@
 export const ROUTES = {
   HOME: "/",
   DEVICES: "/devices",
-  DEVICE: "/device/:id",
+  DEVICE: "/devices/:id",
   CURRENT: "/current"
 }
 

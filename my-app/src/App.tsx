@@ -1,3 +1,4 @@
+// App.tsx
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DevicesPage from "./pages/DevicesPage";
 import { ROUTES } from "./Routes";

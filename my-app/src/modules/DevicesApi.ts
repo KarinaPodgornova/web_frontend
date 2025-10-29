@@ -6,10 +6,12 @@ export async function listDevices(params?: { device_query?: string }): Promise<D
     let path = "/api/v1/devices";
     if (params?.device_query) {
       const query = new URLSearchParams();
-      query.append("device_query", params.device_query);
+      query.append("search", params.device_query);
       path += `?${query.toString()}`;
     }
 
+    console.log('Fetching devices from:', path); // Отладка
+    
     const res = await fetch(path, { 
       headers: { 
         "Accept": "application/json",
@@ -17,45 +19,42 @@ export async function listDevices(params?: { device_query?: string }): Promise<D
       } 
     });
     
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    if (!res.ok) {
+      console.error(`HTTP error! status: ${res.status}`);
+      throw new Error(`HTTP ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log('Devices data received:', data); // Отладка
+    return data;
   } catch (err) {
     console.error("Failed to fetch devices:", err);
-    // Возвращаем mock данные при ошибке
     return [];
   }
 }
 
 export async function getDevice(id: number): Promise<Device | null> {
   try {
-    const res = await fetch(`/api/v1/device/${id}`, { 
+    console.log(`Fetching device ${id} from API...`);
+    const res = await fetch(`/api/v1/devices/${id}`, {
       headers: { 
         "Accept": "application/json",
         "Content-Type": "application/json"
       } 
     });
     
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    console.log(`Response status: ${res.status}`);
+    
+    if (!res.ok) {
+      console.error(`HTTP error! status: ${res.status}`);
+      throw new Error(`HTTP ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log('Device data received:', data);
+    return data;
   } catch (err) {
     console.error(`Failed to fetch device ${id}:`, err);
     return null;
-  }
-}
-
-export async function getCartInfo(): Promise<{ cartId: number; cartCount: number }> {
-  try {
-    const res = await fetch("/api/v1/cart/info", { 
-      headers: { 
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      } 
-    });
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Failed to fetch cart info:", err);
-    return { cartId: 0, cartCount: 0 };
   }
 }

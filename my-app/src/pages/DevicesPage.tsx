@@ -8,32 +8,40 @@ import { listDevices } from '../modules/DevicesApi';
 import { DEVICES_MOCK } from '../modules/mock'; 
 import type { Device } from '../modules/DevicesTypes';
 import './DevicesPage.css';
+import logo from '../assets/logo-big.jpg'
+
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+ 
   const [loading, setLoading] = useState(false);
   const [useMock, setUseMock] = useState(false);
 
   useEffect(() => {
-    if (useMock) {
+    loadDevices();
+  }, []);
+
+  const loadDevices = async () => {
+    setLoading(true);
+    try {
+      const data = await listDevices();
+      if (data && data.length > 0) {
+        setDevices(data);
+        setUseMock(false);
+      } else {
+        setDevices(DEVICES_MOCK);
+        setUseMock(true);
+      }
+    } catch (error) {
+      console.log('Using mock data due to API error');
       setDevices(DEVICES_MOCK);
-    } else {
-      listDevices()
-        .then((data) => {
-          if (data.length > 0) {
-            setDevices(data);
-          } else {
-            setDevices(DEVICES_MOCK);
-            setUseMock(true);
-          }
-        })
-        .catch(() => {
-          setDevices(DEVICES_MOCK);
-          setUseMock(true);
-        });
+      setUseMock(true);
+    } finally {
+      setLoading(false);
     }
-  }, [useMock]);
+  };
+
 
   const handleSearch = async () => {
     setLoading(true);
@@ -46,7 +54,7 @@ export default function DevicesPage() {
       } else {
         if (useMock) {
           const filteredMock = DEVICES_MOCK.filter(device =>
-            device.title.toLowerCase().includes(searchQuery.toLowerCase())
+            device.name.toLowerCase().includes(searchQuery.toLowerCase())
           );
           setDevices(filteredMock);
         } else {
@@ -55,7 +63,7 @@ export default function DevicesPage() {
       }
     } catch (error) {
       const filteredMock = DEVICES_MOCK.filter(device =>
-        device.title.toLowerCase().includes(searchQuery.toLowerCase())
+        device.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setDevices(filteredMock);
       setUseMock(true);
@@ -78,8 +86,8 @@ export default function DevicesPage() {
         <p className="page-title" style={{marginTop: '5px'}}>МУЗЫКА И ЭЛЕКТРОНИКА</p>
         
         <div className="info-banner">
-          <p style={{marginBottom: '-20px'}}>ВЫБЕРИТЕ УСТРОЙСТВО</p>
-          <img src="http://localhost:9000/lab1/img/logo-big.jpg" alt="BMW Logo" />
+          <p style={{position: 'absolute'}}>ВЫБЕРИТЕ УСТРОЙСТВО</p>
+          <img src={logo} alt="BMW Logo" />
           
           <div className="search-container" style={{position: 'absolute', bottom: '30px', left: '20px', marginLeft: '400px', width: '600px'}}>
             <Search 
@@ -106,15 +114,10 @@ export default function DevicesPage() {
             )}
           </div>
           
-          <div className="wrench-after-fourth">
-            <a href="/current" className="cart-link">
-              <button>
-                <i className="fas fa-wrench fa-4x" style={{color: 'black'}}></i>
-                <span className="cart-count">0</span>
-              </button>
-            </a>
-          </div>
+         
         </div>
+
+ 
       </div>
     </div>
   );

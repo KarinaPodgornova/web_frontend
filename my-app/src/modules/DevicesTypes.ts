@@ -1,10 +1,17 @@
-// modules/DevicesTypes.ts
+
+  // modules/DevicesTypes.ts
 export interface Device {
-    id: number;
-    image: string;
-    title: string;
+    device_id: number;
+    name: string;
+    type: string;
+    power_nominal: number;
+    resistance: number;
+    voltage_nominal: number;
+    coeff_reserve: number;
+    coeff_efficiency: number;
+    current_required: number;
     description: string;
-    power: string;
-    specifications: string[];
+    image: string;
+    in_stock: boolean;
     is_delete: boolean;
   }

@@ -1,6 +1,6 @@
 // pages/DevicePage/DevicePage.tsx
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { BreadCrumbs } from '../components/BreadCrumbs/BreadCrumbs';
 import { ROUTES, ROUTE_LABELS } from '../Routes';
 import { getDevice } from '../modules/DevicesApi';
@@ -26,7 +26,7 @@ export default function DevicePage() {
         
         // Если API вернуло null (ошибка), используем моки
         if (!deviceData) {
-          const mockDevice = DEVICES_MOCK.find(d => d.id === Number(id)) || null;
+          const mockDevice = DEVICES_MOCK.find(d => d.device_id === Number(id)) || null;
           setDevice(mockDevice);
         } else {
           setDevice(deviceData);
@@ -34,7 +34,7 @@ export default function DevicePage() {
       } catch (error) {
         console.error('Error fetching device, using mocks:', error);
         // При ошибке используем моки
-        const mockDevice = DEVICES_MOCK.find(d => d.id === Number(id)) || null;
+        const mockDevice = DEVICES_MOCK.find(d => d.device_id === Number(id)) || null;
         setDevice(mockDevice);
       } finally {
         setLoading(false);
@@ -44,10 +44,11 @@ export default function DevicePage() {
     fetchDevice();
   }, [id]);
 
+
   const getImageUrl = (filename: string) => {
-    if (!filename || imageError) return '/src/assets/error_device.png';
+    if (!filename || imageError) return '/src/assets/DefaultImage.jpg';
     return `http://localhost:9000/lab1/img/${filename}`;
-  };
+};
 
   const handleImageError = () => {
     setImageError(true);
@@ -82,7 +83,7 @@ export default function DevicePage() {
       <BreadCrumbs
         crumbs={[
           { label: ROUTE_LABELS.DEVICES, path: ROUTES.DEVICES },
-          { label: device.title },
+          { label: device.name },
         ]}
       />
 
@@ -93,8 +94,8 @@ export default function DevicePage() {
           <div className="device-product-image-section">
             <div className="device-img-container">
               <img 
-                src={getImageUrl(`${device.id}.jpg`)} 
-                alt={device.title}
+                src={getImageUrl(device.image)} 
+                alt={device.name}
                 className="device-product-image-large"
                 onError={handleImageError}
               />
@@ -102,19 +103,21 @@ export default function DevicePage() {
           </div>
           
           <div className="device-product-info-section">
-            <h1 className="device-product-title">{device.title}</h1>
+            <h1 className="device-product-title">{device.name}</h1>
             
             <div className="device-divider"></div>
-            <div className="device-availability">В наличии</div>
-            <div className="device-product-power">Мощность: {device.power}</div>
+            <div className="device-availability">
+              {device.in_stock ? 'В наличии' : 'Нет в наличии'}
+            </div>
+            <div className="device-product-power">Мощность: {device.power_nominal} Вт</div>
             
-            {device.specifications && device.specifications.length > 0 && (
-              <div className="device-specifications">
-                {device.specifications.map((spec, index) => (
-                  <div key={index}>{spec}</div>
-                ))}
-              </div>
-            )}
+            <div className="device-specifications">
+              <div>Тип: {device.type}</div>
+              <div>Напряжение: {device.voltage_nominal} В</div>
+              <div>Сопротивление: {device.resistance} Ом</div>
+              <div>Коэффициент запаса: {device.coeff_reserve}</div>
+              <div>КПД: {(device.coeff_efficiency * 100).toFixed(1)}%</div>
+            </div>
             
             <div className="device-divider"></div>
             

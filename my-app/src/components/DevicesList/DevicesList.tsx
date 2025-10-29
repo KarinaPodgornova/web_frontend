@@ -6,8 +6,8 @@ import { type Device } from '../../modules/DevicesTypes';
 export default function DevicesList({ devices }: {devices: Device[]}) {
   return (
     <>
-      {devices.map((s) => (
-        <DeviceCard key={s.id} device={s} />  
+      {devices.map((device) => (
+        <DeviceCard key={device.device_id} device={device} />  
       ))}
     </>
   );
