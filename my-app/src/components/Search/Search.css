@@ -1,0 +1,43 @@
+/* components/Search/Search.css */
+.search-container { 
+    display: flex; 
+    align-items: center; 
+    background: white; 
+    border-radius: 10px; 
+    height: 34px; 
+
+    overflow: hidden; 
+    margin-right: 15px; 
+  }
+  
+  .search-field { 
+    flex: 1; 
+    height: 100%; 
+    border: none; 
+    padding: 0 15px; 
+    font-size: 14px; 
+    outline: none; 
+    background: white; 
+    color: #000;
+  }
+  
+  .search-field::placeholder { 
+    color: #999; 
+  }
+  
+  .search-button { 
+    background: #1854CD; 
+    border: none; 
+    height: 100%; 
+    width: 40px; 
+    color: white; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: background 0.3s; 
+  }
+  
+  .search-button:hover { 
+    background: #1854CD; 
+  }

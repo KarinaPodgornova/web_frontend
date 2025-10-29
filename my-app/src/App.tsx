@@ -1,18 +1,17 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AlbumPage } from "./pages/AlbumPage";
-import ITunesPage from "./pages/ITunesPage";
+import DevicesPage from "./pages/DevicesPage";
 import { ROUTES } from "./Routes";
 import { HomePage } from "./pages/HomePage";
-import Navition from "./components/Navigation";
+import DevicePage from './pages/DevicePage';
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
   return (
     <BrowserRouter>
-    <Navition/>
       <Routes>
-        <Route path={ROUTES.HOME} index element={<HomePage />} />
-        <Route path={ROUTES.ALBUMS} element={<ITunesPage />} />
-        <Route path={`${ROUTES.ALBUMS}/:id`} element={<AlbumPage />} />
+        <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path={ROUTES.DEVICES} element={<DevicesPage />} />
+        <Route path={ROUTES.DEVICE} element={<DevicePage />} />
       </Routes>
     </BrowserRouter>
   );

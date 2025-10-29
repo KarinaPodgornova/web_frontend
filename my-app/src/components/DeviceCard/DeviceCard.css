@@ -1,0 +1,79 @@
+/* components/DeviceCard/DeviceCard.css */
+.product { 
+    background-color: #f6f6f6; 
+    padding: 19px; 
+    border: 1px solid #bbbbbb; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+    min-height: 292px; 
+   
+}
+
+.product-image { 
+    height: 116px; 
+    background-color: #f6f6f6; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 15px; 
+    overflow: hidden; 
+    position: relative;
+}
+
+.product-image img {
+    max-width: 190px; 
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.product-content { 
+    display: flex; 
+    flex-direction: column; 
+    flex-grow: 1; 
+}
+
+.product-title { 
+    font-weight: 400; 
+    font-size: 11px; 
+    margin-bottom: 5px; 
+    color: #767676; 
+    flex-grow: 1; 
+    text-align: center; 
+}
+
+.product-description {
+    font-size: 18px; 
+    color: #000; 
+    cursor: pointer; 
+    font-weight: 700; 
+    margin-bottom: 5px; 
+    display: block; 
+    text-align: center;
+}
+
+.add-to-cart { 
+    background-color: #1854CD; 
+    color: white; 
+    border: none; 
+    padding: 10px 15px; 
+    border-radius: 0px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    transition: background-color 0.3s ease; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    text-decoration: none;
+    margin-bottom: 10px; 
+    margin-top: 15px;
+}
+
+.add-to-cart:hover{
+    background: #1342a8;
+}

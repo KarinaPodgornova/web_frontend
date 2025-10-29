@@ -1,8 +1,9 @@
+// components/BreadCrumbs/BreadCrumbs.tsx
 import "./BreadCrumbs.css";
 import React from "react";
 import { Link } from "react-router-dom";
 import { type FC } from "react";
-import { ROUTES } from "../Routes";
+import { ROUTES } from "../../Routes";
 
 interface ICrumb {
   label: string;

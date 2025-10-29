@@ -1,0 +1,105 @@
+/* pages/HomePage/HomePage.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .home-page {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  .home-banner {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Центрируем по горизонтали */
+    background: linear-gradient(135deg, #000000 0%, #1854CD 100%);
+    position: relative;
+  }
+  
+  .banner-content {
+    color: white;
+    padding: 2rem;
+    width: 100%;
+    max-width: none;
+    text-align: center; /* Центрируем текст */
+    margin: 0 auto; /* Центрируем блок */
+  }
+  
+  .banner-content h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+    font-family: 'BMWTypeNext', sans-serif;
+    line-height: 1.1;
+    max-width: 800px;
+    margin-left: auto; /* Центрируем заголовок */
+    margin-right: auto; /* Центрируем заголовок */
+  }
+  
+  .banner-content p {
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto; /* Центрируем параграф */
+    margin-right: auto; /* Центрируем параграф */
+  }
+  
+  .banner-content .btn {
+    background-color: #1854CD;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    display: inline-block; /* Чтобы кнопка центрировалась */
+  }
+  
+  .banner-content .btn:hover {
+    background-color: #1342a8;
+    transform: translateY(-2px);
+  }
+  
+  /* Убираем все возможные ограничивающие контейнеры */
+  .container, .container-fluid {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .banner-content {
+      padding: 1rem;
+      text-align: center; /* Центрируем на мобильных */
+    }
+    
+    .banner-content h1 {
+      font-size: 2.8rem;
+      max-width: 100%;
+    }
+    
+    .banner-content p {
+      font-size: 1.2rem;
+      max-width: 100%;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .banner-content h1 {
+      font-size: 5rem;
+    }
+  }

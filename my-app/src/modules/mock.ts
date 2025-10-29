@@ -1,31 +1,117 @@
-import { type ITunesResult } from "./getMusicByName";
+// modules/mock.ts
+import { type Device } from "./DevicesTypes";
 
-export const SONGS_MOCK: ITunesResult = {
-  resultCount: 3, 
-  results: [
-    {
-      wrapperType: "track",
-      artistName: "Pink Floyd",
-      collectionCensoredName: "The Wall",
-      trackViewUrl: "",
-      artworkUrl100: "",
-      collectionId: 0,
-    },
-    {
-      wrapperType: "track",
-      artistName: "Queen",
-      collectionCensoredName: "A Night At The Opera",
-      trackViewUrl: "",
-      artworkUrl100: "",
-      collectionId: 1,
-    },
-    {
-      wrapperType: "track",
-      artistName: "AC/DC",
-      collectionCensoredName: "Made in Heaven",
-      trackViewUrl: "",
-      artworkUrl100: "",
-      collectionId: 2,
-    },
-  ],
-};
+export const DEVICES_MOCK: Device[] = [
+  {
+    id: 1,
+    image: "1.jpg",
+    title: "Универсальный адаптер BMW Step-In",
+    description: "Вставной адаптер Snap-In предназначен для всех подходящих телефонов с разъемом Micro USB. Помимо зарядки телефона обеспечивает также улучшенный прием и надежное крепление. Благодаря разъему USB записанная на телефоне музыка может удобно воспроизводиться через динамики аудиосистемы BMW.",
+    power: "10 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В", 
+      "Выходная мощность: 10 Вт",
+      "Размеры: 145 x 72 x 22 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 2,
+    image: "2.jpg", 
+    title: "Адаптер BMW Step-In для мобильных телефонов Apple",
+    description: "Специально разработан для устройств Apple. Обеспечивает быструю зарядку и стабильное соединение с медиасистемой BMW.",
+    power: "15 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В",
+      "Выходная мощность: 15 Вт", 
+      "Размеры: 142 x 70 x 20 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 3,
+    image: "3.jpg",
+    title: "Автомобильный отопитель BMW",
+    description: "Дополнительный отопитель салона с дистанционным управлением. Обеспечивает комфортную температуру в холодное время года.",
+    power: "150 Вт", 
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Потребляемая мощность: 150 Вт",
+      "Тепловая мощность: 2 кВт",
+      "Размеры: 180 x 120 x 80 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 4,
+    image: "4.jpg",
+    title: "Автомобильный отопитель BMW Premium", 
+    description: "Усовершенствованная модель отопителя с цифровым управлением и таймером. Поддерживает заданную температуру автоматически.",
+    power: "200 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Потребляемая мощность: 200 Вт",
+      "Тепловая мощность: 2.5 кВт",
+      "Размеры: 190 x 125 x 85 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 5,
+    image: "5.jpg",
+    title: "Переходник Micro USB",
+    description: "Компактный переходник для подключения устройств с Micro USB к медиасистеме BMW. Обеспечивает зарядку и передачу данных.",
+    power: "5 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В",
+      "Выходная мощность: 5 Вт",
+      "Размеры: 45 x 20 x 15 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 6,
+    image: "6.jpg",
+    title: "Адаптер Media для Apple iPod / iPhone",
+    description: "Адаптер для полной интеграции устройств Apple с медиасистемой BMW. Поддержка управления через iDrive.",
+    power: "12 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В",
+      "Выходная мощность: 12 Вт", 
+      "Размеры: 95 x 55 x 25 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 7,
+    image: "7.jpg",
+    title: "Музыкальный/медийный адаптер BMW для Apple iPod/iPhone",
+    description: "Премиальный адаптер с поддержкой высококачественного звука и видео. Полная интеграция с интерфейсом iDrive.",
+    power: "18 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В",
+      "Выходная мощность: 18 Вт",
+      "Размеры: 100 x 60 x 28 мм"
+    ],
+    is_delete: false
+  },
+  {
+    id: 8,
+    image: "8.jpg", 
+    title: "Кабель-адаптер BMW для Micro-USB",
+    description: "Оригинальный кабель-адаптер для устройств Android. Обеспечивает быструю зарядку и стабильное соединение.",
+    power: "10 Вт",
+    specifications: [
+      "Входное напряжение: 12 В",
+      "Выходное напряжение: 5 В",
+      "Выходная мощность: 10 Вт",
+      "Длина кабеля: 1.2 м"
+    ],
+    is_delete: false
+  }
+];
