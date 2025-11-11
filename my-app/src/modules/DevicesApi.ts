@@ -1,12 +1,13 @@
 // modules/DevicesApi.ts
 import type { Device } from "./DevicesTypes";
 
+
 export async function listDevices(params?: { device_query?: string }): Promise<Device[]> {
   try {
     let path = "/api/v1/devices";
     if (params?.device_query) {
       const query = new URLSearchParams();
-      query.append("search", params.device_query);
+      query.append("name", params.device_query);
       path += `?${query.toString()}`;
     }
 

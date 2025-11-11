@@ -37,6 +37,7 @@ header {
     font-size: 32px;
     font-family: BMWTypeNext, sans-serif;
     white-space: nowrap;
+    
   }
   
   .logo-small-image {
@@ -44,4 +45,13 @@ header {
     height: 52px;
     border-radius: 50%;
     object-fit: cover;
+  }
+
+  .logo-link {
+    text-decoration: none;
+    color: inherit; /* оставит цвет как у обычного текста */
+  }
+  
+  .logo-link:hover {
+    text-decoration: none; /* на всякий случай */
   }
