@@ -8,18 +8,20 @@ import { listDevices } from '../modules/DevicesApi';
 import { DEVICES_MOCK } from '../modules/mock'; 
 import type { Device } from '../modules/DevicesTypes';
 import './DevicesPage.css';
-import logo from '../assets/logo-big.jpg'
-
+import logo from '../assets/logo-big.jpg';
+import { Link } from 'react-router-dom';
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
- 
+  const [cartCount, setCartCount] = useState(0); // Добавляем состояние для счетчика
   const [loading, setLoading] = useState(false);
   const [useMock, setUseMock] = useState(false);
 
   useEffect(() => {
     loadDevices();
+    // Здесь можно добавить загрузку количества устройств в корзине из API
+    // setCartCount(await getCartCount());
   }, []);
 
   const loadDevices = async () => {
@@ -41,7 +43,6 @@ export default function DevicesPage() {
       setLoading(false);
     }
   };
-
 
   const handleSearch = async () => {
     setLoading(true);
@@ -114,10 +115,16 @@ export default function DevicesPage() {
             )}
           </div>
           
-         
+          {/* Иконка гаечного ключа */}
+          <div className="wrench-after-fourth">
+            <Link to="/current" className="cart-link">
+              <button>
+                <i className="fas fa-wrench fa-4x" style={{ color: 'black' }}></i>
+                <span className="cart-count">{cartCount}</span>
+              </button>
+            </Link>
+          </div>
         </div>
-
- 
       </div>
     </div>
   );
