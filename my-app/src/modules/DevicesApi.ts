@@ -1,6 +1,6 @@
 // modules/DevicesApi.ts
 import type { Device } from "./DevicesTypes";
-
+import { dest_api } from "./target_config";
 
 export async function listDevices(params?: { device_query?: string }): Promise<Device[]> {
   try {
@@ -37,7 +37,7 @@ export async function listDevices(params?: { device_query?: string }): Promise<D
 export async function getDevice(id: number): Promise<Device | null> {
   try {
     console.log(`Fetching device ${id} from API...`);
-    const res = await fetch(`/api/v1/devices/${id}`, {
+    const res = await fetch(`${dest_api}/devices/${id}`, {
       headers: { 
         "Accept": "application/json",
         "Content-Type": "application/json"

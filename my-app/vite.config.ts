@@ -17,7 +17,7 @@ export default defineConfig({
       }
     })
   ],
-  base: '/web_frontend/',
+  base: '/web_frontend',
   server: {
     proxy: {
       "/api": {
