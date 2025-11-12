@@ -35,35 +35,55 @@
   padding: 0;
 }
 
+
+
+
 /* Адаптивные стили */
 @media (max-width: 900px) {
   .search-container {
-    width: 80%;          /* уменьшаем ширину на планшетах */
-    height: 32px;        /* чуть меньше */
+    width: 400px;          /* уменьшаем ширину */
+    height: 32px;
   }
 
   .search-field {
-    font-size: 13px;     /* уменьшаем шрифт */
+    font-size: 13px;
     padding: 0 8px;
   }
 
   .search-button {
-    width: 36px;         /* уменьшаем кнопку */
+    width: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    width: 100%;          /* на мобильных занимает всю доступную ширину */
+    max-width: 100%;     /* но не больше 350px */
+    height: 30px;
+  }
+
+  .search-field {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+
+  .search-button {
+    width: 32px;
   }
 }
 
 @media (max-width: 480px) {
   .search-container {
-    width: 100%;          /* на мобильных занимает всю ширину */
-    height: 30px;
+    max-width: 100%;      /* может занимать всю ширину родителя */
+    height: 28px;
   }
 
   .search-field {
-    font-size: 12px;      /* меньше шрифт */
-    padding: 0 6px;
+    font-size: 11px;
+    padding: 0 5px;
   }
 
   .search-button {
-    width: 32px;          /* кнопка меньше */
+    width: 30px;
   }
 }

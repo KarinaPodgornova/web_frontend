@@ -2,6 +2,7 @@
 import { type FC, useState, useEffect } from "react";
 import Header from '../components/Header/Header';
 import './HomePage.css'; 
+
 import banner1 from '../assets/banner_new.jpg';
 import banner2 from '../assets/DefaultImage.jpg';
 
@@ -50,8 +51,8 @@ export const HomePage: FC = () => {
           }}
         >
           <div className="banner-content">
-          <h1 style={{ fontSize: '3.7rem' }}>Необходимая сила тока</h1>
-            <p style={{ fontSize: '1.9rem' }}>
+          <h1 >Необходимая сила тока</h1>
+            <p >
               Добро пожаловать в каталог устройств для BMW! Здесь вы сможете определить необходимую силу тока для устройств автомобиля.
             </p>
           </div>

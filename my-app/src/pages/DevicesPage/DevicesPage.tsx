@@ -85,12 +85,9 @@ export default function DevicesPage() {
 
       <main>
         <div className="info-banner">
-          <p style={{ marginBottom: '-20px' }}>ВЫБЕРИТЕ УСТРОЙСТВО</p>
+          <p>ВЫБЕРИТЕ УСТРОЙСТВО</p>
           <img src="/web_frontend/logo-big.png" alt="Logo" />
-          <div
-            className="search-container"
-            style={{ position: 'absolute', bottom: '30px', left: '20px', marginLeft: '400px', width: '600px' }}
-          >
+          <div className="search-container-banner">
             <Search
               query={searchTitle}
               onQueryChange={(value) => dispatch(setSearchName(value))}

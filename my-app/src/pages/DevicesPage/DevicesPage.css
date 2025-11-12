@@ -28,29 +28,16 @@
   margin-right: auto;
 }
 
-/* Баннер */
+/* Баннер - ДЛЯ НОУТБУКА */
 .info-banner { 
   background-color: #e9e9e9; 
   border-radius: 20px 20px 0 0; 
   padding: 20px; 
   width: 100%;
   max-width: 1200px;
-  height: 95px; 
+  height: 95px;
   position: relative; 
-  display: flex; 
-  align-items: flex-end; 
-  justify-content: flex-start; 
-  margin: 0 auto 20px auto; /* центрирование */
-  
-}
-
-.info-banner img { 
-  position: absolute; 
-  right: 0; 
-  bottom: 0; 
-  max-height: 80%; 
-  width: auto;
-  object-fit: contain;
+  margin: 0 auto 20px auto;
 }
 
 .info-banner p { 
@@ -60,7 +47,25 @@
   top: 32px; 
   left: 20px; 
   font-size: 28px; 
-  color: #333;  
+  color: #333;
+  margin: 0;
+}
+
+.info-banner img { 
+  position: absolute; 
+  right: 0px; 
+  bottom: 0px; /* ПРАВЫЙ НИЖНИЙ УГОЛ - 20px от низа */
+  max-height: 80px; 
+  width: auto;
+  object-fit: contain;
+}
+
+/* Контейнер поиска */
+.search-container-banner {
+  position: absolute;
+  bottom: 30px; /* 30px от низа */
+  left: 420px; 
+  width: 600px;
 }
 
 /* Обертка карточек */
@@ -70,7 +75,7 @@
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column; /* карточки + кнопка корзины */
+  flex-direction: column;
   justify-content: flex-start;
 }
 
@@ -78,8 +83,8 @@
 .products { 
   display: grid; 
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px; /* отступы между карточками */
-  grid-auto-rows: 1fr; /* одинаковая высота строк */
+  gap: 20px;
+  grid-auto-rows: 1fr;
   margin-top: 0; 
   width: 100%;
 }
@@ -96,7 +101,7 @@
 /* Изображение в карточке */
 .device-card img {
   width: 100%;
-  height: auto; /* авто для корректного отображения */
+  height: auto;
   object-fit: cover;
 }
 
@@ -117,21 +122,47 @@
   grid-column: 1 / -1;
 }
 
-/* Адаптивность */
+/* Адаптивность для планшетов */
 @media (max-width: 1250px) {
   .products {
       grid-template-columns: repeat(3, 1fr);
   }
 }
 
+@media (max-width: 1024px) {
+  .page-title {
+    font-size: 40px;
+  }
+  
+  .info-banner p {
+    font-size: 24px;
+  }
+  
+  .search-container-banner {
+    width: 500px;
+    left: 350px;
+  }
+}
+
+/* Адаптивность для планшетов */
 @media (max-width: 900px) {
   .products {
       grid-template-columns: repeat(2, 1fr);
   }
   
   .info-banner {
-      height: auto;
-      padding: 60px 20px 20px 20px;
+      height: 120px;
+  }
+
+  .info-banner p {
+    font-size: 22px;
+    top: 25px;
+  }
+
+  .search-container-banner {
+    width: 400px;
+    left: 280px;
+    bottom: 25px;
   }
 
   .wrench-after-fourth {
@@ -140,9 +171,81 @@
   }
 }
 
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 32px;
+    margin-top: -10px;
+  }
+  
+  .info-banner {
+    height: 100px;
+    padding: 15px;
+  }
+  
+  .info-banner p {
+    font-size: 20px;
+    top: 15px;
+    left: 15px;
+    z-index: 2; /* надпись поверх лого */
+  }
+  
+  .info-banner img {
+    display: block; /* ПОКАЗЫВАЕМ лого на мобильных */
+    right: 0px;
+    bottom: 0px;
+    max-height: 100px;
+    
+  }
+  
+  .search-container-banner {
+    width: calc(100% - 100px); /* оставляем место для лого справа */
+    left: 15px;
+    bottom: 35px;
+    z-index: 2; /* поиск поверх лого */
+  }
+}
+
+
+
+
+/* Адаптивность для маленьких мобильных */
 @media (max-width: 480px) {
+  .container {
+    padding: 0 15px;
+    margin: 0px auto;
+  }
+  
+  .page-title {
+    font-size: 28px;
+  }
+  
+  .info-banner {
+    height: 110px;
+    padding: 12px;
+  }
+  
+  .info-banner p {
+    font-size: 18px;
+    top: 12px;
+    left: 12px;
+  }
+  
+  .info-banner img {
+    right: 0px;
+    bottom: 0px;
+    max-height: 100px;
+  }
+  
+  .search-container-banner {
+    width: calc(100% - 80px); /* меньше места для лого */
+    left: 12px;
+    bottom: 35px;
+  }
+  
   .products {
       grid-template-columns: 1fr;
+      gap: 15px;
   }
   
   .wrench-after-fourth {
@@ -151,3 +254,26 @@
   }
 }
 
+/* Для очень маленьких телефонов */
+@media (max-width: 375px) {
+  .info-banner p {
+    font-size: 16px;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .info-banner {
+    height: 100px;
+  }
+  
+  .info-banner img {
+    max-height: 100px;
+  }
+  
+  .search-container-banner {
+    width: calc(100% - 70px); /* еще меньше места для лого */
+    bottom: 35px;
+  }
+}

@@ -10,6 +10,7 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* Убираем горизонтальный скролл */
 }
 
 .home-page {
@@ -38,6 +39,7 @@ html, body, #root {
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
+  background-attachment: fixed; /* Фиксируем фон */
 }
 
 /* Затемнение картинок */
@@ -52,53 +54,47 @@ html, body, #root {
   z-index: 1;
 }
 
-.banner-slide.gradient {
-  /* Градиент уже задан через inline style */
-}
-
 .banner-content {
   color: white;
   padding: 2rem;
   width: 100%;
-  max-width: none;
+  max-width: 1200px;
   text-align: center;
   position: relative;
   z-index: 2;
 }
 
-/* Подсветка для заголовка */
+/* Заголовок - для ноутбука */
 .banner-content h1 {
-  font-size: 3.7rem;
-  margin-bottom: 1.5rem;
-  font-weight: 300;
+  font-size: 3.7rem; /* Размер для ноута */
+  margin-bottom: 1rem;
+  font-weight: 400;
   font-family: 'BMWTypeNext', sans-serif;
-  line-height: 1.1;
-  max-width: 800px;
+  line-height: 1.2;
+  max-width: 90%;
   margin-left: auto;
   margin-right: auto;
   text-shadow: 
-  0 0 10px rgba(0, 0, 0, 0.8),  /* Черная подсветка */
-  0 0 20px rgba(0, 0, 0, 0.6),
-  0 0 30px rgba(0, 0, 0, 0.4),
-  2px 2px 4px rgba(0, 0, 0, 0.5);   /* Черная тень */
+    0 0 8px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(0, 0, 0, 0.6),
+    2px 2px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* Подсветка для текста */
+/* Текст - для ноутбука */
 .banner-content p {
-  font-size: 1.9rem;
-  margin-bottom: 2.5rem;
-  line-height: 1.6;
-  max-width: 600px;
+  font-size: 1.9rem; /* Размер для ноута */
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  max-width: 90%;
   margin-left: auto;
   margin-right: auto;
   text-shadow: 
-  0 0 10px rgba(0, 0, 0, 0.8),  /* Черная подсветка */
-  0 0 20px rgba(0, 0, 0, 0.6),
-  0 0 30px rgba(0, 0, 0, 0.4),
-  2px 2px 4px rgba(0, 0, 0, 0.5);   /* Черная тень */
+    0 0 6px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(0, 0, 0, 0.6),
+    1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-/* Стили для незаметных стрелок */
+/* Стрелки навигации */
 .carousel-arrow {
   position: absolute;
   top: 50%;
@@ -106,9 +102,9 @@ html, body, #root {
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 4rem;
-  width: 80px;
-  height: 80px;
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  width: clamp(40px, 8vw, 60px);
+  height: clamp(40px, 8vw, 60px);
   cursor: pointer;
   z-index: 10;
   transition: all 0.3s ease;
@@ -116,6 +112,7 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   opacity: 0.3;
+  border-radius: 50%;
 }
 
 .carousel-arrow:hover {
@@ -126,11 +123,191 @@ html, body, #root {
 }
 
 .carousel-arrow-prev {
-  left: 20px;
+  left: clamp(8px, 1.5vw, 15px);
 }
 
 .carousel-arrow-next {
-  right: 20px;
+  right: clamp(8px, 1.5vw, 15px);
+}
+
+/* Индикаторы слайдов */
+.carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: white;
+  border-color: white;
+}
+
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 1024px) {
+  .banner-content {
+    padding: 1.5rem;
+  }
+  
+  .banner-content h1 {
+    margin-bottom: 0.8rem;
+    font-size: 2.8rem; /* Увеличил для планшетов */
+  }
+  
+  .banner-content p {
+    margin-bottom: 1.5rem;
+    font-size: 1.6rem; /* Увеличил для планшетов */
+  }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .home-banner {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-slide {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-content {
+    padding: 1rem;
+  }
+  
+  .banner-content h1 {
+    margin-bottom: 0.8rem;
+    max-width: 95%;
+    font-size: 2.2rem; /* УВЕЛИЧИЛ для телефона */
+    line-height: 1.3;
+  }
+  
+  .banner-content p {
+    margin-bottom: 1.2rem;
+    max-width: 95%;
+    font-size: 1.4rem; /* УВЕЛИЧИЛ для телефона */
+    line-height: 1.4;
+  }
+  
+  .carousel-arrow {
+    opacity: 0.2;
+  }
+  
+  .carousel-indicators {
+    bottom: 15px;
+  }
+  
+  .indicator {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Адаптивность для маленьких мобильных */
+@media (max-width: 480px) {
+  .home-banner {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-slide {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-content {
+    padding: 1rem;
+  }
+  
+  .banner-content h1 {
+    margin-bottom: 0.6rem;
+    font-size: 2rem; /* УВЕЛИЧИЛ для маленьких телефонов */
+    line-height: 1.2;
+  }
+  
+  .banner-content p {
+    margin-bottom: 1rem;
+    font-size: 1.2rem; /* УВЕЛИЧИЛ для маленьких телефонов */
+    line-height: 1.3;
+  }
+  
+  .carousel-arrow {
+    width: 35px;
+    height: 35px;
+    font-size: 1.5rem;
+  }
+  
+  .carousel-indicators {
+    bottom: 12px;
+    gap: 6px;
+  }
+  
+  .indicator {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* Для очень маленьких мобильных (iPhone SE и подобные) */
+@media (max-width: 375px) {
+  .banner-content h1 {
+    font-size: 1.8rem; /* УВЕЛИЧИЛ для очень маленьких */
+  }
+  
+  .banner-content p {
+    font-size: 1.1rem; /* УВЕЛИЧИЛ для очень маленьких */
+  }
+  
+  .carousel-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Для горизонтальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .home-banner {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-slide {
+    min-height: 100vh;
+    height: 100vh;
+  }
+  
+  .banner-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .banner-content p {
+    font-size: 1rem;
+  }
+}
+
+/* Убираем возможные отступы у body */
+body {
+  margin: 0;
+  padding: 0;
 }
 
 .container, .container-fluid {
@@ -139,65 +316,5 @@ html, body, #root {
   margin: 0 !important;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .banner-content {
-    padding: 1rem;
-    text-align: center;
-  }
-  
-  .banner-content h1 {
-    font-size: 2.8rem;
-    max-width: 100%;
-    text-shadow: 
-      0 0 8px rgba(24, 84, 205, 0.8),
-      0 0 15px rgba(24, 84, 205, 0.6),
-      2px 2px 3px rgba(0, 0, 0, 0.5);
-  }
-  
-  .banner-content p {
-    font-size: 1.2rem;
-    max-width: 100%;
-    text-shadow: 
-      0 0 4px rgba(255, 255, 255, 0.8),
-      0 0 8px rgba(255, 255, 255, 0.6),
-      1px 1px 2px rgba(0, 0, 0, 0.3);
-  }
-  
-  .carousel-arrow {
-    width: 60px;
-    height: 60px;
-    font-size: 3rem;
-    opacity: 0.2;
-  }
-  
-  .carousel-arrow-prev {
-    left: 10px;
-  }
-  
-  .carousel-arrow-next {
-    right: 10px;
-  }
-}
 
-@media (max-width: 480px) {
-  .carousel-arrow {
-    width: 50px;
-    height: 50px;
-    font-size: 2.5rem;
-  }
-  
-  .carousel-arrow-prev {
-    left: 5px;
-  }
-  
-  .carousel-arrow-next {
-    right: 5px;
-  }
-}
 
-@media (min-width: 1200px) {
-  .banner-content h1 {
-    font-size: 5rem;
-  }
-}

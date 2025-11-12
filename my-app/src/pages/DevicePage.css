@@ -177,25 +177,163 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .device-detail-container {
+    padding: 10px 20px; /* УМЕНЬШИЛ верхний/нижний padding */
+    margin: 0 auto; /* УБРАЛ отступ сверху */
+  }
+  
+  .device-footer-spacer {
+    height: 5px; /* ЕЩЕ МЕНЬШЕ */
+  }
+  
   .device-product-detail-container {
     flex-direction: column;
-    gap: 30px;
+    gap: 15px; /* УМЕНЬШИЛ расстояние */
+    margin-top: 5px; /* УМЕНЬШИЛ отступ сверху */
+    align-items: center;
+  }
+  
+  .device-product-image-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0; /* УБЕДИМСЯ что нет отступов */
   }
   
   .device-img-container {
     width: 100%;
     height: auto;
-    max-width: 400px;
+    max-width: 350px; /* УМЕНЬШИЛ максимальную ширину */
     margin: 0 auto;
+    padding: 10px; /* УМЕНЬШИЛ padding */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .device-product-image-large {
     width: 100% !important;
     height: auto !important;
-    max-width: 300px;
+    max-width: 280px; /* УМЕНЬШИЛ картинку */
+    margin: 0 auto;
+    display: block;
   }
   
+  .device-product-title {
+    font-size: 24px;
+    margin-bottom: 10px; /* УМЕНЬШИЛ отступ */
+    text-align: center;
+    margin-top: 0; /* УБЕДИМСЯ что нет отступа сверху */
+  }
+}
+
+/* Для маленьких телефонов */
+@media (max-width: 480px) {
   .device-detail-container {
-    padding: 20px;
+    padding: 5px 15px; /* МИНИМАЛЬНЫЙ padding */
+    margin: 0 auto;
+  }
+  
+  .device-footer-spacer {
+    height: 2px; /* ПОЧТИ УБРАЛ */
+  }
+  
+  .device-product-detail-container {
+    gap: 10px;
+    margin-top: 2px;
+    align-items: center;
+  }
+  
+  .device-product-image-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+  }
+  
+  .device-img-container {
+    padding: 8px;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .device-product-image-large {
+    max-width: 220px;
+  }
+  
+  .device-product-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  
+  .device-product-info-section {
+    width: 100%;
+    text-align: center;
+    margin: 0; /* УБЕДИМСЯ что нет отступов */
+  }
+  
+  .device-specifications {
+    text-align: center;
+    margin-bottom: 20px; /* УМЕНЬШИЛ отступ */
+  }
+}
+
+/* Для iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .device-detail-container {
+    padding: 2px 10px; /* СУПЕР МАЛЕНЬКИЙ padding */
+    margin: 0 auto;
+  }
+  
+  .device-footer-spacer {
+    height: 0px; /* ПОЛНОСТЬЮ УБРАЛ */
+  }
+  
+  .device-product-detail-container {
+    gap: 8px;
+    margin-top: 0;
+    align-items: center;
+  }
+  
+  .device-product-image-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+  }
+  
+  .device-img-container {
+    padding: 5px;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+  
+  .device-product-image-large {
+    max-width: 200px;
+  }
+  
+  .device-product-info-section {
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* УМЕНЬШИМ все отступы в info секции */
+  .device-availability {
+    margin-bottom: 15px;
+  }
+  
+  .device-product-power {
+    margin-bottom: 10px;
+  }
+  
+  .device-specifications {
+    margin-bottom: 15px;
+  }
+  
+  .device-divider {
+    margin: 10px 0; /* УМЕНЬШИЛ отступы у разделителей */
   }
 }
