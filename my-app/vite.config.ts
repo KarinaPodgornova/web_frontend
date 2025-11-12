@@ -1,23 +1,35 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  base: '/web_frontend',
+  plugins: [
+    react(),
+    VitePWA({ 
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+      },
+      // УБЕРИ manifest отсюда - используй отдельный файл
+      includeAssets: ['logo192.png', 'logo512.png'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
+      }
+    })
+  ],
+  base: '/web_frontend/',
   server: {
     proxy: {
       "/api": {
         target: "http://localhost:80",
         changeOrigin: true,
-        // rewrite: (path) => path.replace(/^\/api/, "/"),
       },
     },
-    watch: { // нужно для hot-reload при использовании docker
-        usePolling: true,
+    watch: {
+      usePolling: true,
     }, 
-    host: true, // нужно, чтобы правильно работал маппинг портов в docker-контейнере
-    strictPort: true, // необязательно
-    port: 3000, // можете заменить на любой другой порт
+    host: true,
+    strictPort: true,
+    port: 3000,
   },
-});
+})
