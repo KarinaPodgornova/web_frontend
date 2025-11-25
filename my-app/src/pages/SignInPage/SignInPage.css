@@ -1,0 +1,144 @@
+/* Стили ТОЛЬКО для страницы регистрации - БЕЗ ХЕДЕРА */
+.reg-page {
+    min-height: 100vh;
+    background: linear-gradient(
+        135deg,
+        #0a1f4d 0%,
+        #0d2c76 25%,
+        #1b58d6 50%,
+        #0d2c76 75%,
+        #0a1f4d 100%
+    );
+    color: white;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.reg-page .reg-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.reg-page .reg-form-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    width: 100%;
+}
+
+.reg-page .reg-form-wrapper h1 {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-align: center;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Ошибка */
+.reg-page .error-message {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ff6b6b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+/* Форма */
+.reg-page .reg-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.reg-page .form-group label {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Поля */
+.reg-page .form-group input {
+    padding: 16px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.reg-page .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.reg-page .form-group input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопка */
+.reg-page .reg-button {
+    background: linear-gradient(135deg, #ffffff 0%, #e8f4ff 100%);
+    color: #1b58d6;
+    border: none;
+    padding: 18px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    width: 100%;
+}
+
+.reg-page .reg-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e8f4ff 0%, #ffffff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+}
+
+.reg-page .reg-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.reg-page .reg-links {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.reg-page .reg-links a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.reg-page .reg-links a:hover {
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}

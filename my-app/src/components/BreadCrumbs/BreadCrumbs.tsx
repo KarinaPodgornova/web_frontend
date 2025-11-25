@@ -20,7 +20,7 @@ export const BreadCrumbs: FC<BreadCrumbsProps> = (props) => {
   return (
     <ul className="breadcrumbs">
       <li>
-        <Link to={ROUTES.HOME}>Главная</Link>
+      <Link to={ROUTES.Home}>Главная</Link>
       </li>
       {!!crumbs.length &&
         crumbs.map((crumb, index) => (

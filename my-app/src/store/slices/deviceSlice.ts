@@ -1,7 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { Device } from '../../modules/DevicesTypes'
+import { api } from '../../api'
 
-export interface DevicesState {
+interface DevicesState {
   devices: Device[]
   loading: boolean
   error: string | null
@@ -12,6 +13,20 @@ const initialState: DevicesState = {
   loading: false,
   error: null
 }
+
+export const fetchDevices = createAsyncThunk(
+  'devices/fetchDevices',
+  async (searchTitle: string | undefined, { rejectWithValue }) => {
+    try {
+      const response = await api.devices.devicesList({ 
+        device_name: searchTitle 
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.description || 'Ошибка загрузки устройств');
+    }
+  }
+);
 
 const devicesSlice = createSlice({
   name: 'devices',
@@ -25,7 +40,25 @@ const devicesSlice = createSlice({
     },
     setError: (state, action) => {
       state.error = action.payload
+    },
+    clearError: (state) => {
+      state.error = null
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchDevices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDevices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.devices = action.payload as Device[]; 
+     })
+      .addCase(fetchDevices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
   }
 })
 
