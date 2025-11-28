@@ -10,6 +10,10 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 import AccountPage from "./pages/AccountPage/AccountPage";
 
+import CurrentCalculationPage from './pages/CurrentCalculationPage/CurrentCalculationPage';
+import CurrentCalculationsPage from './pages/CurrentCalculationsPage/CurrentCalculationsPage';
+
+
 
 
 
@@ -20,6 +24,9 @@ function App() {
       <Route path={ROUTES.Home} element={<HomePage />} />
         <Route path={ROUTES.DEVICES} element={<DevicesPage />} />
         <Route path={ROUTES.DEVICE} element={<DevicePage />} />
+        <Route path={ROUTES.CURRENTS} element={<CurrentCalculationsPage />} />
+        <Route path={ROUTES.CURRENT} element={<CurrentCalculationPage />} />
+        
         <Route path={ROUTES.SignIn} element={<SignInPage />} /> 
         <Route path={ROUTES.SignUp} element={<SignUpPage />} />
         <Route path={ROUTES.Profile} element={<AccountPage />} />

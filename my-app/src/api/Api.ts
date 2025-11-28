@@ -598,7 +598,7 @@ export class Api<
      * @tags users
      * @name SigninCreate
      * @summary Вход (получение токена)
-     * @request POST:/users/signin
+     * @request POST:/signin
      */
     signinCreate: (
       credentials: SerializerUserJSON,
@@ -637,7 +637,7 @@ export class Api<
      * @tags users
      * @name SignupCreate
      * @summary Регистрация пользователя
-     * @request POST:/users/signup
+     * @request POST:/signup
      */
     signupCreate: (user: SerializerUserJSON, params: RequestParams = {}) =>
       this.request<SerializerUserJSON, Record<string, string>>({

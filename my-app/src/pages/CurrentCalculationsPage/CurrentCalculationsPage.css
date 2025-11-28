@@ -1,0 +1,204 @@
+/* src/pages/CurrentCalculationsPage/CurrentCalculationsPage.css */
+.currents-list-page {
+    min-height: 100vh;
+    background-color: #f6f6f6;
+    font-family: BMWTypeNext, sans-serif;
+}
+
+.currents-list-page main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.currents-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.currents-header h1 {
+    font-size: 44px;
+    color: #000;
+    font-weight: 100;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.currents-header p {
+    font-size: 18px;
+    color: #666;
+    margin: 0;
+}
+
+.currents-container {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 40px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: #1854CD;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #1342a8;
+}
+
+/* Стили для таблицы заявок */
+.currents-table-wrapper {
+    width: 100%;
+}
+
+.currents-table-header {
+    display: grid;
+    grid-template-columns: 80px 120px 1fr 120px 120px 120px 1fr;
+    gap: 15px;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+}
+
+.currents-table-body {
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.currents-table-row {
+    display: grid;
+    grid-template-columns: 80px 120px 1fr 120px 120px 120px 1fr;
+    gap: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-items: center;
+}
+
+.currents-table-row:hover {
+    background-color: #f8f9fa;
+}
+
+.currents-table-row:last-child {
+    border-bottom: none;
+}
+
+/* Стили для статусов */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-formed {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.error-message {
+    background: #ffe7e7;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    font-size: 18px;
+    color: #666;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .currents-table-header,
+    .currents-table-row {
+        grid-template-columns: 60px 100px 1fr 100px 100px 100px 1fr;
+        gap: 10px;
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .currents-list-page main {
+        padding: 20px 15px;
+    }
+
+    .currents-header h1 {
+        font-size: 32px;
+    }
+
+    .currents-container {
+        padding: 20px;
+        overflow-x: auto;
+    }
+
+    .currents-table-wrapper {
+        min-width: 800px;
+    }
+
+    .currents-table-header,
+    .currents-table-row {
+        grid-template-columns: 60px 90px 120px 90px 90px 90px 120px;
+        gap: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .currents-header h1 {
+        font-size: 28px;
+    }
+
+    .currents-header p {
+        font-size: 16px;
+    }
+}

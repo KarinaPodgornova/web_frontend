@@ -4,7 +4,8 @@ export const ROUTES = {
 
   DEVICES: "/devices",
   DEVICE: "/devices/:id",
-  CURRENT: "/current",
+  CURRENTS: "/currents",          // список расчётов
+  CURRENT: "/current/:id",  
   SignIn: "/signin",
   SignUp: "/signup",
   Profile: "/users/:login/info"
@@ -17,6 +18,7 @@ export const ROUTE_LABELS: {[key in RouteKeyType]: string} = {
   DEVICES: "Устройства",
   DEVICE: "Устройство",
   CURRENT: "Текущая заявка",
+  CURRENTS: "Мои заявки",
   SignIn: "Вход",
   SignUp: "Регистрация",
   Profile: "Профиль"

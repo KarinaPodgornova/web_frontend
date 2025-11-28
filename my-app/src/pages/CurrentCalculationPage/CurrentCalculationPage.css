@@ -1,0 +1,483 @@
+/* src/pages/CurrentCalculationPage/CurrentCalculationPage.css */
+.current-calculation-page {
+    min-height: 100vh;
+    background-color: #f6f6f6;
+    font-family: BMWTypeNext, sans-serif;
+}
+
+.current-calculation-page main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.current-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.current-header h1 {
+    font-size: 44px;
+    color: #000;
+    font-weight: 100;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.current-header p {
+    font-size: 18px;
+    color: #666;
+    margin: 0;
+}
+
+/* Заголовок таблицы - ИСПРАВЛЕНА СЕТКА */
+.current-devices-table-header {
+    display: grid;
+    grid-template-columns: 80px 2fr 1fr 1fr 80px;
+    align-items: center;
+    padding: 15px 25px;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    font-weight: 600;
+    color: #333;
+    gap: 20px;
+}
+
+/* Пустая ячейка для картинки в заголовке */
+.image-header {
+    /* пустая ячейка для выравнивания с картинками устройств */
+}
+
+.device-title-header {
+    text-align: left;
+}
+
+.device-power-header {
+    text-align: center;
+}
+
+.amount-header {
+    text-align: center;
+}
+
+.actions-header {
+    text-align: center;
+}
+
+/* Список устройств */
+.current-devices-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 40px 0;
+    background: #ffffff;
+    border-radius: 0 0 10px 10px;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    overflow: hidden;
+}
+
+.current-device-item {
+    display: grid;
+    grid-template-columns: 80px 2fr 1fr 1fr 80px;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 20px;
+}
+
+.current-device-item:last-child {
+    border-bottom: none;
+}
+
+/* Элементы устройства */
+.device-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.device-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.device-info {
+    display: flex;
+    align-items: center;
+}
+
+.device-name {
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.device-name:hover {
+    color: #1854CD;
+}
+
+.device-power {
+    color: #1854CD;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Контролы количества */
+.amount-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    justify-content: center;
+}
+
+.quantity-btn {
+    width: 30px;
+    height: 30px;
+    background: #f6f6f6;
+    color: black;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    border: 1px solid #E9E9E9;
+}
+
+.quantity-btn:hover:not(:disabled) {
+    border: 1px solid #a1a0a0;
+}
+
+.quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quantity-input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #E9E9E9;
+    background-color: #f6f6f6;
+    font-size: 14px;
+}
+
+.quantity-input:hover {
+    border: 1px solid #a1a0a0;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: #1854CD;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.saving-indicator {
+    color: #1854CD;
+    font-size: 12px;
+}
+
+/* Кнопки действий */
+.device-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-remove-device {
+    background: #979797;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-remove-device:hover:not(:disabled) {
+    background: #7a7a7a;
+}
+
+.btn-remove-device:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Блоки состояний */
+.empty-cart,
+.no-devices {
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 40px;
+}
+
+.empty-cart p,
+.no-devices p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.empty-cart button,
+.no-devices button {
+    background: #1854CD;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.empty-cart button:hover,
+.no-devices button:hover {
+    background: #1342a8;
+}
+
+/* Подтверждение расчета */
+.calculation-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 0;
+    border-top: 2px solid #e0e0e0;
+    gap: 20px;
+}
+
+.btn-primary-danger {
+    background: #979797;
+    color: black;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary-danger:hover:not(:disabled) {
+    background: #7a7a7a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 151, 151, 0.3);
+}
+
+.btn-primary-danger:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-confirm-calculation {
+    background: #1854CD;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-confirm-calculation:hover:not(:disabled) {
+    background: #1342a8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(24, 84, 205, 0.3);
+}
+
+.btn-confirm-calculation:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Загрузка */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 18px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Уведомления */
+.notification {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.notification.success {
+    background: #f1f9f1;
+    border: 1px solid #c8e6c9;
+    color: #2e7d32;
+}
+
+.notification.error {
+    background: #ffe7e7;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+}
+
+/* Стили для блока параметров */
+.calculator-params {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.params-section h3,
+.results-section h3 {
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.param-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.param-row label {
+    min-width: 300px;
+    font-weight: 600;
+    color: #333;
+}
+
+.param-input {
+    width: 100px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f6f6f6;
+    font-size: 14px;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.result-value {
+    font-weight: 700;
+    color: #1854CD;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .current-calculation-page main {
+        padding: 20px 15px;
+    }
+
+    .current-header h1 {
+        font-size: 32px;
+    }
+
+    .current-devices-table-header,
+    .current-device-item {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        text-align: center;
+        padding: 15px 20px;
+    }
+
+    .device-power {
+        text-align: center;
+    }
+
+    .calculation-actions {
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .btn-confirm-calculation {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .calculator-params {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .param-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .param-row label {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .current-header h1 {
+        font-size: 28px;
+    }
+
+    .current-header p {
+        font-size: 16px;
+    }
+
+    .btn-remove-device {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .calculation-actions {
+        gap: 15px;
+    }
+
+    .btn-primary-danger,
+    .btn-confirm-calculation {
+        width: 100%;
+        text-align: center;
+    }
+}

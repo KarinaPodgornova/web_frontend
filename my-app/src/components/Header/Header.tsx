@@ -52,6 +52,9 @@ export default function Header() {
                 <NavLink to={`/users/${username}/info`} className="header__link">
                   Профиль
                 </NavLink>
+                <NavLink to={ROUTES.CURRENTS} className="header__link">
+                  Мои заявки
+                </NavLink>
                 <Link to={`/`} className="header__link" onClick={handleLogout}>
                   Выйти
                 </Link>
@@ -84,6 +87,9 @@ export default function Header() {
               <div className="user-menu-mobile">
                 <NavLink to={`/users/${username}/info`} className="header__link">
                   Профиль
+                </NavLink>
+                <NavLink to={ROUTES.CURRENTS} className="header__link">
+                  Мои заявки
                 </NavLink>
                 <NavLink to={`/`} className="header__link" onClick={handleLogout}>
                   Выйти

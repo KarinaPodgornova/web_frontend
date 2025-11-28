@@ -42,7 +42,8 @@ export default function AccountPage() {
     setError('');
     
     try {
-        const response = await api.users.infoList(username);
+        
+      const response = await api.users.getUsers(username)
         const userData = response.data;
         if (userData && userData.login && userData.id !== undefined) {
             const profileData: UserProfile = {
@@ -124,7 +125,7 @@ export default function AccountPage() {
             is_moderator: isModerator
         };
 
-    await api.users.infoUpdate(username, updateData);
+        await api.users.putUsers(username, updateData);
 
       setSuccessMessage('Пароль успешно изменен!');
       setCurrentPassword('');
