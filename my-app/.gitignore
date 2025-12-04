@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+../Thumbs.db
+../*.docx # если не хотите отслеживать Word-файлы
