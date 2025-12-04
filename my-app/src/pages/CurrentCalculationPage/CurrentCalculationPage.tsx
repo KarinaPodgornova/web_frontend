@@ -1,6 +1,7 @@
 // src/pages/CurrentCalculationPage/CurrentCalculationPage.tsx
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
@@ -18,11 +19,15 @@ import defaultDevice from '../../assets/DefaultImage.jpg';
 
 
 export default function CurrentCalculationPage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  
 
   const { isAuthenticated } = useAppSelector(state => state.user);
   const { currentCart, currentDetail, devices_count, loading, saveLoading } = useAppSelector(state => state.currentCalculation);
+
+  const isViewingCalculation = !!id;
 
   const [submitLoading, setSubmitLoading] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -34,18 +39,8 @@ export default function CurrentCalculationPage() {
   };
 
   const getDevices = () => {
-    if (!currentDetail && !currentCart) return [];
-    
-    const devices = currentDetail?.devices || currentCart?.devices || [];
-    
-    // Добавляем amount для каждого устройства
-    const mergedDevices = devices.map(device => ({
-      ...device,
-      id: device.device_id,
-      amount: device.amount || 1,
-    }));
-
-    return mergedDevices;
+    const data = id ? currentDetail : currentCart;
+    return data?.devices || [];
   };
 
   const getCurrentCalculationData = () => {
@@ -91,27 +86,36 @@ export default function CurrentCalculationPage() {
     }
   };
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/signin');
-      return;
-    }
+ // ЗАМЕНИТЕ весь useEffect на этот:
+useEffect(() => {
+  if (!isAuthenticated) {
+    navigate('/signin');
+    return;
+  }
 
-    const loadData = async () => {
-      try {
+  const loadData = async () => {
+    try {
+      if (id) {
+        // ЕСТЬ ID в URL - загружаем конкретную заявку
+        console.log('Загружаем заявку ID:', id);
+        await dispatch(getCurrentDetail(parseInt(id)));
+      } else {
+        // НЕТ ID в URL - загружаем корзину (черновик)
+        console.log('Загружаем корзину (черновик)');
         const cartResult = await dispatch(getCurrentCart()).unwrap();
         
         if (cartResult.current_id || cartResult.id) {
           const currentId = cartResult.current_id || cartResult.id;
           await dispatch(getCurrentDetail(currentId));
         }
-      } catch (error) {
-        console.error('Error loading data:', error);
       }
-    };
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
 
-    loadData();
-  }, [isAuthenticated, dispatch, navigate]);
+  loadData();
+}, [isAuthenticated, dispatch, navigate, id]); // ← ДОБАВЬТЕ id в зависимости
 
   const handleOpenDevice = (deviceId: number) => {
     navigate(`/devices/${deviceId}`);
@@ -222,10 +226,19 @@ export default function CurrentCalculationPage() {
       />
       
       <main>
-        <div className="current-header">
-          <h1>Моя корзина #{currentCart.id}</h1>
-          <p>Всего устройств: {devices_count}</p>
-        </div>
+      <div className="current-header">
+  <h1>
+    {id ? `Расчёт №${id}` : `Моя корзина`}
+  </h1>
+  <p>
+    Всего устройств: {
+      id 
+        ? (currentDetail?.devices || []).length 
+        : (currentCart?.devices || []).length
+    }
+  </p>
+</div>
+
 
         {notification && (
           <div className={`notification ${notification.type}`}>
@@ -269,20 +282,14 @@ export default function CurrentCalculationPage() {
         )}
 
 <div className="calculation-actions">
-  <button 
-    className="btn-primary-danger" 
-    onClick={handleDeleteCalculation}
-    disabled={submitLoading}
-  >
-    Удалить заявку
-  </button>
+  
   
   <button 
     className="btn-confirm-calculation" 
     onClick={handleFormCalculation}
     disabled={submitLoading || !hasDevices}
   >
-    {submitLoading ? 'Подтверждение...' : 'Подтвердить расчёт'}
+    {submitLoading ? 'Подтверждение...' : 'Сформировать расчёт'}
   </button>
 </div>
       </main>
@@ -298,6 +305,7 @@ function CurrentDeviceRow({
   saveLoading,
   getImageUrl,
   handleImageError,
+  isDraft, 
 }: any) {
   const [localDeviceAmount, setLocalDeviceAmount] = useState(device.amount || 1);
 
