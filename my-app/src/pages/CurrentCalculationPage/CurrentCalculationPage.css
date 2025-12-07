@@ -6,9 +6,9 @@
 }
 
 .current-calculation-page main {
-    max-width: 1200px;
+    max-width: 1300px; /* Увеличил максимальную ширину */
     margin: 0 auto;
-    padding: 30px 20px;
+    padding: 30px 40px; /* Увеличил паддинги */
 }
 
 .current-header {
@@ -30,28 +30,30 @@
     margin: 0;
 }
 
-/* Заголовок таблицы - ИСПРАВЛЕНА СЕТКА */
+/* Заголовок таблицы - РАСШИРЕННАЯ СЕТКА */
 .current-devices-table-header {
     display: grid;
-    grid-template-columns: 80px 2fr 1fr 1fr 80px;
+    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px; /* Широкая сетка */
     align-items: center;
-    padding: 15px 25px;
+    padding: 20px 25px; /* Больше паддинга */
     background: #f8f9fa;
     border-radius: 8px 8px 0 0;
     border: 1px solid #e0e0e0;
     border-bottom: none;
     font-weight: 600;
     color: #333;
-    gap: 20px;
+    gap: 25px; /* Больше отступов между колонками */
+    font-size: 17px;
 }
 
 /* Пустая ячейка для картинки в заголовке */
 .image-header {
-    /* пустая ячейка для выравнивания с картинками устройств */
+    text-align: center;
 }
 
 .device-title-header {
     text-align: left;
+    padding-left: 15px; /* Отступ для названия */
 }
 
 .device-power-header {
@@ -62,8 +64,14 @@
     text-align: center;
 }
 
+.amperage-header {
+    text-align: center;
+    white-space: nowrap;
+}
+
 .actions-header {
     text-align: center;
+    white-space: nowrap;
 }
 
 /* Список устройств */
@@ -78,13 +86,15 @@
     overflow: hidden;
 }
 
+/* Строка устройства - РАСШИРЕННАЯ СЕТКА */
 .current-device-item {
     display: grid;
-    grid-template-columns: 80px 2fr 1fr 1fr 80px;
+    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px; /* ТА ЖЕ ШИРОКАЯ СЕТКА */
     align-items: center;
-    padding: 15px 25px;
+    padding: 20px 25px; /* Больше паддинга */
     border-bottom: 1px solid #f0f0f0;
-    gap: 20px;
+    gap: 25px; /* Больше отступов между колонками */
+    min-height: 80px; /* Выше строки */
 }
 
 .current-device-item:last-child {
@@ -99,8 +109,8 @@
 }
 
 .device-image {
-    width: 60px;
-    height: 60px;
+    width: 70px; /* Немного больше */
+    height: 70px;
     object-fit: cover;
     border-radius: 6px;
     border: 1px solid #e0e0e0;
@@ -109,44 +119,64 @@
 .device-info {
     display: flex;
     align-items: center;
+    min-width: 0;
+    padding-left: 15px; /* Отступ слева для названия */
 }
 
+/* УБИРАЕМ ПОДЧЕРКИВАНИЕ У НАЗВАНИЯ УСТРОЙСТВА */
 .device-name {
     font-weight: 600;
-    color: #000;
+    color: #0066cc;
     cursor: pointer;
-    text-decoration: underline;
+    /* Убрано: text-decoration: underline; */
     transition: color 0.3s ease;
+    font-size: 17px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    padding-right: 10px;
 }
 
 .device-name:hover {
     color: #1854CD;
+    text-decoration: underline; /* Только при наведении */
 }
 
 .device-power {
-    color: #1854CD;
-    font-weight: 600;
+    color: #000;
     text-align: center;
+    font-size: 17px;
+    font-weight: 500;
 }
 
-/* Контролы количества */
+/* Контролы количества - больше места */
 .amount-controls {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    justify-content: center;
+    height: 100%;
+}
+
+.quantity-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 0px;
+    gap: 10px; /* Больше отступов между кнопками */
     justify-content: center;
 }
 
 .quantity-btn {
-    width: 30px;
-    height: 30px;
+    width: 36px; /* Больше кнопки */
+    height: 36px;
     background: #f6f6f6;
     color: black;
     cursor: pointer;
@@ -154,7 +184,7 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     border: 1px solid #E9E9E9;
 }
 
@@ -168,12 +198,13 @@
 }
 
 .quantity-input {
-    width: 40px;
-    height: 40px;
+    width: 60px; /* Шире поле ввода */
+    height: 36px;
     text-align: center;
     border: 1px solid #E9E9E9;
     background-color: #f6f6f6;
-    font-size: 14px;
+    font-size: 17px;
+    font-weight: 500;
 }
 
 .quantity-input:hover {
@@ -193,30 +224,93 @@
 
 .saving-indicator {
     color: #1854CD;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-/* Кнопки действий */
-.device-actions {
+.device-amount-readonly {
+    font-size: 18px;
+    
+    text-align: center;
+    color: #333;
+}
+
+/* Сила тока устройства - больше места */
+.device-amperage {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
     display: flex;
+    align-items: center;
     justify-content: center;
+    height: 100%;
+    color: #000;
+}
+
+.device-amperage strong {
+    font-weight: 700;
+    color: #000;
+    font-size: 18px;
+}
+
+/* Кнопки действий устройства - больше места */
+.device-actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Больше отступ между кнопками */
+    justify-content: center;
+    height: 100%;
+}
+
+.btn-save-amount {
+    padding: 10px 20px; /* Больше кнопка */
+    background-color: #1854CD;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 100px; /* Шире кнопка */
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-save-amount:hover:not(:disabled) {
+    background-color: #1342a8;
+    transform: translateY(-2px);
+}
+
+.btn-save-amount:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #6c757d;
+    transform: none;
 }
 
 .btn-remove-device {
     background: #979797;
     color: black;
     border: none;
-    padding: 8px 16px;
+    padding: 10px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
+    transition: all 0.3s ease;
+    width: 40px; /* Больше кнопка */
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-remove-device:hover:not(:disabled) {
     background: #7a7a7a;
+    transform: translateY(-2px);
 }
 
 .btn-remove-device:disabled {
@@ -355,61 +449,198 @@
     color: #c62828;
 }
 
-/* Стили для блока параметров */
-.calculator-params {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 40px;
-    padding: 25px;
-    background: #ffffff;
-    border-radius: 10px;
-    border: 1px solid #e0e0e0;
+/* Секция напряжения и силы тока в одной строке */
+.voltage-amperage-single-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 20px 25px; /* Больше паддинга */
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    gap: 40px;
 }
 
-.params-section h3,
-.results-section h3 {
-    font-weight: 700;
-    color: #000;
-    margin-bottom: 15px;
+.voltage-control-group,
+.amperage-control-group {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.voltage-label,
+.amperage-label {
+    font-weight: bold;
+    color: #495057;
+    font-size: 17px;
+    min-width: 220px; /* Шире метки */
+    margin-right: 20px;
+}
+
+.voltage-input-group {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Больше отступов */
+    flex: 1;
+}
+
+.voltage-input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.voltage-input {
+    width: 140px; /* Шире поле ввода */
+    padding: 10px 40px 10px 15px; /* Больше паддинга */
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 17px;
+}
+
+.voltage-input:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.voltage-unit {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
     font-size: 16px;
 }
 
-.param-row {
+.voltage-actions {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
-    gap: 10px;
+    gap: 15px; /* Больше отступов */
 }
 
-.param-row label {
-    min-width: 300px;
-    font-weight: 600;
-    color: #333;
+.btn-save-voltage {
+    padding: 10px 20px; /* Больше кнопка */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background-color 0.3s;
 }
 
-.param-input {
-    width: 100px;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    background-color: #f6f6f6;
-    font-size: 14px;
+.btn-save-voltage:hover:not(:disabled) {
+    background-color: #0056b3;
 }
 
-.result-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
+.btn-save-voltage:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
-.result-value {
-    font-weight: 700;
+.voltage-hint {
+    color: #6c757d;
+    font-size: 14px; /* Чуть больше */
+    font-style: italic;
+}
+
+.amperage-display {
+    flex: 1;
+}
+
+.amperage-value {
+    font-size: 20px; /* Больше текст */
     color: #1854CD;
+    font-weight: bold;
+    padding: 10px 20px; /* Больше паддинг */
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    display: inline-block;
+    min-width: 140px; /* Шире блок */
+    text-align: center;
+}
+
+.amperage-empty {
+    color: #6c757d;
+    font-style: italic;
+    padding: 10px 20px;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    display: inline-block;
+    min-width: 140px;
+    text-align: center;
+}
+
+.btn-primary-back {
+    background: #979797;
+    color: black;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Адаптивность */
+@media (max-width: 1400px) {
+    .current-calculation-page main {
+        max-width: 100%;
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .current-devices-table-header,
+    .current-device-item {
+        grid-template-columns: 70px 2fr 130px 100px 160px 110px;
+        gap: 20px;
+        padding: 18px 20px;
+    }
+    
+    .voltage-amperage-single-line {
+        gap: 30px;
+    }
+}
+
+@media (max-width: 992px) {
+    .voltage-amperage-single-line {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+    
+    .voltage-control-group,
+    .amperage-control-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .voltage-label,
+    .amperage-label {
+        min-width: auto;
+        margin-right: 0;
+    }
+    
+    .voltage-input-group {
+        width: 100%;
+    }
+    
+    .current-devices-table-header,
+    .current-device-item {
+        grid-template-columns: 60px 2fr 110px 90px 140px 100px;
+        gap: 15px;
+        padding: 15px;
+    }
+}
+
 @media (max-width: 768px) {
     .current-calculation-page main {
         padding: 20px 15px;
@@ -424,36 +655,30 @@
         grid-template-columns: 1fr;
         gap: 15px;
         text-align: center;
-        padding: 15px 20px;
+        padding: 20px 15px;
     }
 
-    .device-power {
+    .device-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .device-name {
+        font-size: 18px;
+        white-space: normal;
         text-align: center;
+        margin: 10px 0;
     }
 
     .calculation-actions {
-        justify-content: center;
         flex-direction: column;
+        justify-content: center;
+        gap: 15px;
     }
 
     .btn-confirm-calculation {
         width: 100%;
         max-width: 300px;
-    }
-
-    .calculator-params {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .param-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-    }
-
-    .param-row label {
-        min-width: auto;
     }
 }
 
@@ -465,19 +690,20 @@
     .current-header p {
         font-size: 16px;
     }
-
-    .btn-remove-device {
+    
+    .voltage-input {
         width: 100%;
-        padding: 10px;
+        max-width: 150px;
     }
-
-    .calculation-actions {
-        gap: 15px;
-    }
-
-    .btn-primary-danger,
-    .btn-confirm-calculation {
+    
+    .btn-save-voltage {
         width: 100%;
-        text-align: center;
+        max-width: 150px;
+    }
+    
+    .amperage-value,
+    .amperage-empty {
+        min-width: 120px;
+        font-size: 18px;
     }
 }

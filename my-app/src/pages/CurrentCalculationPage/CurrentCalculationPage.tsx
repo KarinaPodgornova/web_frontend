@@ -1,7 +1,6 @@
 // src/pages/CurrentCalculationPage/CurrentCalculationPage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-//import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
@@ -12,41 +11,171 @@ import {
   removeFromCurrentCalculation, 
   formCurrentCalculation,
   updateDeviceAmount, 
-  deleteCurrentCalculation
+  deleteCurrentCalculation,
+  updateVoltageBord
 } from '../../store/slices/currentCalculationSlice';
+import { api } from '../../api';
 import './CurrentCalculationPage.css';
 import defaultDevice from '../../assets/DefaultImage.jpg';
-
 
 export default function CurrentCalculationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-
   const { isAuthenticated } = useAppSelector(state => state.user);
-  const { currentCart, currentDetail, devices_count, loading, saveLoading } = useAppSelector(state => state.currentCalculation);
-
-  const isViewingCalculation = !!id;
+  const { 
+    currentCart, 
+    currentDetail, 
+    loading, 
+    saveLoading
+  } = useAppSelector(state => state.currentCalculation);
 
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [voltageInput, setVoltageInput] = useState<string>('11.5');
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
+  const [currentStatus, setCurrentStatus] = useState<string>('unknown');
+  const [originalVoltage, setOriginalVoltage] = useState<number | null>(null);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 3000);
   };
 
+  // Функция для получения ID текущего расчёта
+  const getCurrentId = (): number | null => {
+    if (id) {
+      return parseInt(id);
+    }
+    
+    if (currentCart?.current_id) {
+      return currentCart.current_id;
+    }
+    if (currentCart?.id) {
+      return currentCart.id;
+    }
+    
+    return null;
+  };
+
+  // Функция для получения текущего напряжения
+  const getCurrentVoltage = (): number => {
+    const currentId = getCurrentId();
+    
+    // 1. Проверяем localStorage для этой заявки
+    if (currentId) {
+      const savedVoltage = localStorage.getItem(`voltage_${currentId}`);
+      if (savedVoltage) {
+        return parseFloat(savedVoltage);
+      }
+    }
+    
+    // 2. Из текущих деталей (приоритет)
+    if (id && currentDetail?.voltage_bord !== undefined) {
+      // Сохраняем в localStorage при первом получении
+      if (currentId) {
+        localStorage.setItem(`voltage_${currentId}`, currentDetail.voltage_bord.toString());
+      }
+      return currentDetail.voltage_bord;
+    }
+    
+    // 3. Из корзины
+    if (currentCart?.voltage_bord !== undefined) {
+      // Сохраняем в localStorage при первом получении
+      const currentId = getCurrentId();
+      if (currentId) {
+        localStorage.setItem(`voltage_${currentId}`, currentCart.voltage_bord.toString());
+      }
+      return currentCart.voltage_bord;
+    }
+    
+    // 4. Дефолтное значение
+    return 11.5;
+  };
+
+  // Функция для получения актуального статуса
+  const getCalculationStatus = (): string => {
+    // Приоритет: детали -> корзина -> локальный статус
+    if (currentDetail?.status) {
+      return currentDetail.status;
+    }
+    if (currentCart?.status) {
+      return currentCart.status;
+    }
+    return currentStatus;
+  };
+
+  // Функция для получения общей силы тока
+  const getTotalAmperage = (): number | null => {
+    // Проверяем разные источники данных
+    if (id && currentDetail) {
+      // 1. Из currentDetail.total_amperage
+      if (currentDetail.total_amperage !== undefined && currentDetail.total_amperage !== null) {
+        return currentDetail.total_amperage;
+      }
+      
+      // 2. Из currentDetail.amperage
+      if (currentDetail.amperage !== undefined && currentDetail.amperage !== null) {
+        return currentDetail.amperage;
+      }
+      
+      // 3. Из devices_with_amperage (суммируем если есть)
+      if (currentDetail.devices_with_amperage && Array.isArray(currentDetail.devices_with_amperage)) {
+        const sum = currentDetail.devices_with_amperage.reduce((total: number, device: any) => {
+          return total + (device.amperage || 0);
+        }, 0);
+        if (sum > 0) return sum;
+      }
+      
+      // 4. Из currentDevices (суммируем если есть)
+      if (currentDetail.currentDevices && Array.isArray(currentDetail.currentDevices)) {
+        const sum = currentDetail.currentDevices.reduce((total: number, device: any) => {
+          return total + (device.amperage || 0);
+        }, 0);
+        if (sum > 0) return sum;
+      }
+    }
+    
+    return null;
+  };
+
+  // Функция для получения списка устройств
   const getDevices = () => {
     const data = id ? currentDetail : currentCart;
-    return data?.devices || [];
+    
+    if (!data) return [];
+    
+    if (id && currentDetail) {
+      const devices = currentDetail.devices || [];
+      const currentDevices = (currentDetail as any).currentDevices || (currentDetail as any).current_devices || [];
+      
+      if (currentDevices.length > 0) {
+        return devices.map((device: any) => {
+          const currentDevice = currentDevices.find((cd: any) => 
+            cd.device_id === device.device_id || cd.device_id === device.id
+          );
+          
+          return {
+            ...device,
+            id: device.device_id || device.id,
+            amount: currentDevice?.amount || device.amount || 1,
+            amperage: currentDevice?.amperage || 0,
+          };
+        });
+      }
+    }
+    
+    const devices = data.devices || [];
+    return devices.map((device: any) => ({
+      ...device,
+      id: device.device_id || device.id,
+      amount: device.amount || 1,
+      amperage: 0,
+    }));
   };
 
-  const getCurrentCalculationData = () => {
-    return currentDetail || currentCart;
-  };
-
+  // Функция для обработки ошибок загрузки изображений
   const handleImageError = (deviceId: number) => {
     setImageErrors(prev => ({
       ...prev,
@@ -54,6 +183,7 @@ export default function CurrentCalculationPage() {
     }));
   };
 
+  // Функция для получения URL изображения
   const getImageUrl = (device: any) => {
     if (imageErrors[device.device_id] || !device.image) {
       return defaultDevice;
@@ -61,8 +191,15 @@ export default function CurrentCalculationPage() {
     return `http://localhost:9000/lab1/img/${device.image}`;
   };
 
+  // Функция для сохранения количества устройств
   const handleSaveDeviceAmount = async (deviceId: number, amount: number) => {
-    if (!currentCart?.id) return;
+    const currentId = getCurrentId();
+    const status = getCalculationStatus();
+    
+    if (!currentId || status !== "draft") {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
+    }
     
     if (amount < 1) {
       showNotification('error', 'Количество должно быть больше 0');
@@ -72,69 +209,167 @@ export default function CurrentCalculationPage() {
     try {
       await dispatch(updateDeviceAmount({
         deviceId,
-        currentId: currentCart.id,
+        currentId: currentId,
         amount: amount
       })).unwrap();
       
       showNotification('success', 'Количество сохранено!');
-      dispatch(getCurrentCart());
-      if (currentCart.id) {
-        dispatch(getCurrentDetail(currentCart.id));
-      }
+      
+      // Обновляем данные через секунду
+      setTimeout(() => {
+        if (id) {
+          dispatch(getCurrentDetail(parseInt(id)));
+        } else {
+          dispatch(getCurrentCart());
+        }
+      }, 500);
+      
     } catch (error: any) {
-      showNotification('error', 'Ошибка сохранения количества: ' + (error.message || 'Неизвестная ошибка'));
+      console.error('Ошибка сохранения количества:', error);
+      showNotification('error', `Ошибка сохранения количества: ${error.message || 'Неизвестная ошибка'}`);
     }
   };
 
- // ЗАМЕНИТЕ весь useEffect на этот:
-useEffect(() => {
-  if (!isAuthenticated) {
-    navigate('/signin');
-    return;
-  }
+  // Функция для обновления напряжения бортовой сети
+  const handleUpdateVoltage = async () => {
+    const currentId = getCurrentId();
+    const status = getCalculationStatus();
+    
+    if (!currentId) {
+      showNotification('error', 'Заявка не найдена');
+      return;
+    }
 
-  const loadData = async () => {
+    if (status !== "draft") {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
+    }
+
+    const voltageValue = parseFloat(voltageInput);
+    if (isNaN(voltageValue)) {
+      showNotification('error', 'Введите корректное значение напряжения');
+      return;
+    }
+
+    if (voltageValue <= 0 || voltageValue > 48) {
+      showNotification('error', 'Напряжение должно быть в диапазоне 0.1-48 В');
+      return;
+    }
+
     try {
-      if (id) {
-        // ЕСТЬ ID в URL - загружаем конкретную заявку
-        console.log('Загружаем заявку ID:', id);
-        await dispatch(getCurrentDetail(parseInt(id)));
-      } else {
-        // НЕТ ID в URL - загружаем корзину (черновик)
-        console.log('Загружаем корзину (черновик)');
-        const cartResult = await dispatch(getCurrentCart()).unwrap();
-        
-        if (cartResult.current_id || cartResult.id) {
-          const currentId = cartResult.current_id || cartResult.id;
-          await dispatch(getCurrentDetail(currentId));
+      await dispatch(updateVoltageBord({
+        currentId,
+        voltage: voltageValue
+      })).unwrap();
+      
+      // Сохраняем в localStorage для этой заявки
+      localStorage.setItem(`voltage_${currentId}`, voltageValue.toString());
+      
+      // Сохраняем новое значение как оригинальное
+      setOriginalVoltage(voltageValue);
+      
+      showNotification('success', 'Напряжение сохранено!');
+      
+      // Обновляем данные через секунду
+      setTimeout(() => {
+        if (id) {
+          dispatch(getCurrentDetail(parseInt(id)));
+        } else {
+          dispatch(getCurrentCart());
         }
+      }, 500);
+      
+    } catch (error: any) {
+      console.error('Ошибка сохранения напряжения:', error);
+      showNotification('error', error.message || 'Ошибка сохранения напряжения');
+    }
+  };
+
+  // Функция для загрузки статуса заявки
+  const loadCurrentStatus = async () => {
+    if (!id) {
+      // Для корзины статус всегда черновик
+      setCurrentStatus('draft');
+      return;
+    }
+
+    try {
+      const response = await api.currentCalculations.currentCalculationsList();
+      const calculations = response.data;
+      
+      const currentCalculation = calculations.find(
+        (calc: any) => calc.current_id === parseInt(id) || calc.id === parseInt(id)
+      );
+      
+      if (currentCalculation?.status) {
+        setCurrentStatus(currentCalculation.status);
+      } else {
+        setCurrentStatus('draft');
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Ошибка загрузки статуса:', error);
+      setCurrentStatus('unknown');
     }
   };
 
-  loadData();
-}, [isAuthenticated, dispatch, navigate, id]); // ← ДОБАВЬТЕ id в зависимости
+  // Инициализация напряжения при загрузке данных
+  useEffect(() => {
+    const voltage = getCurrentVoltage();
+    setVoltageInput(voltage.toString());
+    setOriginalVoltage(voltage);
+  }, [currentCart, currentDetail, id]);
 
+  // Загрузка данных при монтировании
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/signin');
+      return;
+    }
+    
+    const loadData = async () => {
+      try {
+        if (id) {
+          await dispatch(getCurrentDetail(parseInt(id)));
+          await loadCurrentStatus();
+        } else {
+          await dispatch(getCurrentCart());
+          setCurrentStatus('draft');
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+
+    loadData();
+  }, [isAuthenticated, dispatch, navigate, id]);
+
+  // Функция для открытия страницы устройства
   const handleOpenDevice = (deviceId: number) => {
     navigate(`/devices/${deviceId}`);
   };
 
+  // Функция для удаления устройства из расчёта
   const handleRemoveDevice = async (deviceId: number) => {
-    if (!currentCart?.id) return;
+    const currentId = getCurrentId();
+    const status = getCalculationStatus();
+    
+    if (!currentId || status !== "draft") {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
+    }
 
     if (!window.confirm('Вы уверены, что хотите удалить устройство из расчёта?')) return;
 
     try {
       await dispatch(removeFromCurrentCalculation({ 
         deviceId, 
-        currentId: currentCart.id 
+        currentId: currentId
       })).unwrap();
       
-      dispatch(getCurrentCart());
-      if (currentCart.id) {
-        dispatch(getCurrentDetail(currentCart.id));
+      if (id) {
+        dispatch(getCurrentDetail(parseInt(id)));
+      } else {
+        dispatch(getCurrentCart());
       }
       
       showNotification('success', 'Устройство удалено из расчёта!');
@@ -144,14 +379,20 @@ useEffect(() => {
     }
   };
 
-
+  // Функция для удаления заявки
   const handleDeleteCalculation = async () => {
-    if (!currentCart?.id) return;
+    const currentId = getCurrentId();
+    const status = getCalculationStatus();
+    
+    if (!currentId || status !== "draft") {
+      showNotification('error', 'Только черновики можно удалять');
+      return;
+    }
   
     if (!window.confirm('Вы уверены, что хотите удалить заявку?')) return;
   
     try {
-      await dispatch(deleteCurrentCalculation(currentCart.id)).unwrap();
+      await dispatch(deleteCurrentCalculation(currentId)).unwrap();
       showNotification('success', 'Заявка удалена!');
       setTimeout(() => navigate('/devices'), 1000);
     } catch (err) {
@@ -160,14 +401,23 @@ useEffect(() => {
     }
   };
 
-
+  // Функция для подтверждения расчёта
   const handleFormCalculation = async () => {
-    if (!currentCart?.id) return;
+    const currentId = getCurrentId();
+    const status = getCalculationStatus();
+    
+    if (!currentId || status !== "draft") {
+      showNotification('error', 'Только черновики можно подтверждать');
+      return;
+    }
 
     setSubmitLoading(true);
     try {
-      await dispatch(formCurrentCalculation(currentCart.id)).unwrap();
+      await dispatch(formCurrentCalculation(currentId)).unwrap();
       showNotification('success', 'Расчёт подтверждён!');
+      
+      // Обновляем статус
+      setCurrentStatus('formed');
       
       setTimeout(() => {
         navigate('/devices');
@@ -179,26 +429,39 @@ useEffect(() => {
       setSubmitLoading(false);
     }
   };
-
-
-
-
   
+  // Показываем загрузку
   if (loading) {
     return (
       <div className="current-calculation-page">
         <Header />
-        <div className="loading">Загрузка корзины...</div>
+        <div className="loading">Загрузка...</div>
       </div>
     );
   }
 
-  if (!currentCart) {
+  // Получаем данные для отображения
+  const devices = getDevices();
+  const hasDevices = devices.length > 0;
+  const actualStatus = getCalculationStatus();
+  const isDraft = actualStatus === "draft";
+  const isCompleted = actualStatus === "completed" || actualStatus === "finished";
+  const currentVoltage = getCurrentVoltage();
+  const hasVoltageChanged = originalVoltage !== null && parseFloat(voltageInput) !== originalVoltage;
+  const canEditVoltage = isDraft && !saveLoading.voltage;
+  
+  // Получаем общую силу тока
+  const totalAmperage = getTotalAmperage();
+  const showAmperage = !isDraft && totalAmperage !== null;
+
+  // Проверяем наличие данных
+  const hasData = (id && currentDetail) || (!id && currentCart);
+  if (!hasData && !loading) {
     return (
       <div className="current-calculation-page">
         <Header />
         <div className="empty-cart">
-          <p>Корзина пуста</p>
+          <p>Заявка не найдена</p>
           <button 
             className="btn-primary-back"
             onClick={() => navigate('/devices')}
@@ -210,9 +473,19 @@ useEffect(() => {
     );
   }
 
-  const currentCalculationData = getCurrentCalculationData();
-  const devices = getDevices();
-  const hasDevices = devices.length > 0;
+  // Функция для отображения статуса
+  const getStatusDisplayText = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'draft': 'Черновик',
+      'formed': 'Сформирована',
+      'completed': 'Завершена',
+      'rejected': 'Отклонена',
+      'finished': 'Завершена',
+      'declined': 'Отклонена',
+      'unknown': 'Неизвестно'
+    };
+    return statusMap[status] || status;
+  };
 
   return (
     <div className="current-calculation-page">
@@ -220,25 +493,22 @@ useEffect(() => {
       
       <BreadCrumbs
         crumbs={[
-          { label: ROUTE_LABELS.DEVICES, path: '/devices' },
-          { label: ROUTE_LABELS.CURRENT },
+          { label: ROUTE_LABELS.CURRENTS, path: '/currents' },
+          { label: id ? `Расчёт №${id}` : ROUTE_LABELS.CURRENT },
         ]}
       />
       
       <main>
-      <div className="current-header">
-  <h1>
-    {id ? `Расчёт №${id}` : `Моя корзина`}
-  </h1>
-  <p>
-    Всего устройств: {
-      id 
-        ? (currentDetail?.devices || []).length 
-        : (currentCart?.devices || []).length
-    }
-  </p>
-</div>
-
+        <div className="current-header">
+          <h1>
+            {id ? `Расчёт №${id}` : `Моя корзина`}
+          </h1>
+          
+          <p>
+            Всего устройств: {devices.length}
+          </p>
+          <p>Статус: <strong className={`status-${actualStatus}`}>{getStatusDisplayText(actualStatus)}</strong></p>
+        </div>
 
         {notification && (
           <div className={`notification ${notification.type}`}>
@@ -246,14 +516,79 @@ useEffect(() => {
           </div>
         )}
 
+        {/* Секция напряжения бортовой сети и силы тока */}
+        <div className="voltage-amperage-section">
+        {/* Секция напряжения бортовой сети и силы тока в одной строке */}
+<div className="voltage-amperage-single-line">
+  <div className="voltage-control-group">
+    <label htmlFor="voltage-input" className="voltage-label">
+      Напряжение бортовой сети:
+    </label>
+    <div className="voltage-input-group">
+      <div className="voltage-input-wrapper">
+        <input
+          id="voltage-input"
+          type="number"
+          className="voltage-input"
+          value={voltageInput}
+          onChange={(e) => setVoltageInput(e.target.value)}
+          step="0.1"
+          min="0.1"
+          max="48"
+          disabled={!isDraft || saveLoading.voltage}
+          placeholder="В"
+        />
+        <span className="voltage-unit">В</span>
+      </div>
+      
+      {isDraft ? (
+        <div className="voltage-actions">
+          <button
+            className="btn-save-voltage"
+            onClick={handleUpdateVoltage}
+            disabled={!canEditVoltage || !hasVoltageChanged}
+          >
+            {saveLoading.voltage ? 'Сохранение...' : 'Сохранить'}
+          </button>
+          {hasVoltageChanged && (
+            <span className="voltage-hint">
+              Нажмите "Сохранить" для применения
+            </span>
+          )}
+        </div>
+      ) : null}
+    </div>
+  </div>
+
+  <div className="amperage-control-group">
+    <label className="amperage-label">
+      Необходимая сила тока:
+    </label>
+    <div className="amperage-display">
+      {showAmperage ? (
+        <span className="amperage-value">
+           <strong>{totalAmperage?.toFixed(2)} А</strong>
+        </span>
+      ) : (
+        <span className="amperage-empty">—</span>
+      )}
+    </div>
+  </div>
+</div>
+
+        </div>
+
+        {/* Заголовок таблицы устройств */}
         <div className="current-devices-table-header">
-          <span className="image-header"></span> {/* Добавь эту пустую ячейку */}
+          <span className="image-header"></span>
           <span className="device-title-header">Устройство</span>
           <span className="device-power-header">Мощность устройства</span>
           <span className="amount-header">Количество</span>
-          <span className="actions-header">Удаление</span>
+          <span className="amperage-header">Необходимая сила тока</span>
+          {isDraft && <span className="actions-header">Действия</span>}
         </div>
 
+        {/* Список устройств */}
         {hasDevices ? (
           <ul className="current-devices-list">
             {devices.map((device: any) => (
@@ -266,6 +601,7 @@ useEffect(() => {
                 saveLoading={saveLoading}
                 getImageUrl={getImageUrl}
                 handleImageError={handleImageError}
+                isDraft={isDraft}
               />
             ))}
           </ul>
@@ -281,22 +617,36 @@ useEffect(() => {
           </div>
         )}
 
-<div className="calculation-actions">
-  
-  
-  <button 
-    className="btn-confirm-calculation" 
-    onClick={handleFormCalculation}
-    disabled={submitLoading || !hasDevices}
-  >
-    {submitLoading ? 'Подтверждение...' : 'Сформировать расчёт'}
-  </button>
-</div>
+        {/* Действия с заявкой */}
+        <div className="calculation-actions">
+          {isDraft ? (
+            <>
+              <button 
+                className="btn-primary-danger" 
+                onClick={handleDeleteCalculation}
+                disabled={submitLoading || saveLoading.voltage}
+              >
+                Удалить заявку
+              </button>
+              
+              <button 
+                className="btn-confirm-calculation" 
+                onClick={handleFormCalculation}
+                disabled={submitLoading || saveLoading.voltage || !hasDevices}
+              >
+                {submitLoading ? 'Подтверждение...' : 'Сформировать расчёт'}
+              </button>
+            </>
+          ) : (
+            null
+          )}
+        </div>
       </main>
     </div>
   );
 }
 
+// Компонент строки устройства
 function CurrentDeviceRow({ 
   device, 
   onOpenDevice, 
@@ -305,35 +655,50 @@ function CurrentDeviceRow({
   saveLoading,
   getImageUrl,
   handleImageError,
-  isDraft, 
+  isDraft = false,
 }: any) {
   const [localDeviceAmount, setLocalDeviceAmount] = useState(device.amount || 1);
 
+  // Синхронизируем локальное состояние с пропсами
+  useEffect(() => {
+    setLocalDeviceAmount(device.amount || 1);
+  }, [device.amount]);
+
+  // Обработчик изменения количества
   const handleAmountChange = (value: number) => {
+    if (!isDraft) return;
     setLocalDeviceAmount(value);
   };
 
+  // Увеличение количества
+  const handleIncrement = () => {
+    if (!isDraft) return;
+    
+    const newAmount = parseInt(localDeviceAmount.toString()) + 1;
+    setLocalDeviceAmount(newAmount);
+  };
+
+  // Уменьшение количества
+  const handleDecrement = () => {
+    if (!isDraft) return;
+    
+    const newAmount = Math.max(1, parseInt(localDeviceAmount.toString()) - 1);
+    setLocalDeviceAmount(newAmount);
+  };
+
+  // Сохранение количества
   const handleSave = () => {
-    const amountValue = parseInt(localDeviceAmount);
-    if (!isNaN(amountValue)) {
+    if (!isDraft) return;
+    
+    const amountValue = parseInt(localDeviceAmount.toString());
+    if (!isNaN(amountValue) && amountValue >= 1) {
       onSaveDeviceAmount(device.device_id, amountValue);
     }
   };
 
-  const handleIncrement = () => {
-    const newAmount = parseInt(localDeviceAmount) + 1;
-    setLocalDeviceAmount(newAmount);
-    onSaveDeviceAmount(device.device_id, newAmount);
-  };
-
-  const handleDecrement = () => {
-    const newAmount = Math.max(1, parseInt(localDeviceAmount) - 1);
-    setLocalDeviceAmount(newAmount);
-    onSaveDeviceAmount(device.device_id, newAmount);
-  };
-
   return (
     <li className="current-device-item">
+      {/* Изображение устройства */}
       <div className="device-image-container">
         <img 
           src={getImageUrl(device)}
@@ -343,58 +708,84 @@ function CurrentDeviceRow({
         />
       </div>
       
+      {/* Информация об устройстве */}
       <div className="device-info">
         <span 
           className="device-name" 
           onClick={() => onOpenDevice(device.device_id)}
+          style={{ cursor: 'pointer', color: '#0066cc' }}
         >
           {device.name || `Устройство ${device.device_id}`}
         </span>
       </div>
 
+      {/* Мощность устройства */}
       <span className="device-power">{device.power_nominal} Вт</span>
       
+      {/* Управление количеством */}
       <div className="amount-controls">
-        <div className="quantity-controls">
-          <button 
-            className="quantity-btn"
-            onClick={handleDecrement}
-            disabled={saveLoading.devices?.[device.device_id]}
-          >
-            -
-          </button>
-          <input 
-            type="number" 
-            className="quantity-input"
-            value={localDeviceAmount}
-            onChange={(e) => handleAmountChange(parseInt(e.target.value) || 1)}
-            min="1"
-            max="100"
-            disabled={saveLoading.devices?.[device.device_id]}
-          />
-          <button 
-            className="quantity-btn"
-            onClick={handleIncrement}
-            disabled={saveLoading.devices?.[device.device_id]}
-          >
-            +
-          </button>
-        </div>
-        {saveLoading.devices?.[device.device_id] && (
-          <div className="saving-indicator">...</div>
+        {isDraft ? (
+          <div className="quantity-controls-wrapper">
+            <div className="quantity-controls">
+              <button 
+                className="quantity-btn"
+                onClick={handleDecrement}
+                disabled={saveLoading.devices?.[device.device_id]}
+              >
+                -
+              </button>
+              <input 
+                type="number" 
+                className="quantity-input"
+                value={localDeviceAmount}
+                onChange={(e) => handleAmountChange(parseInt(e.target.value) || 1)}
+                min="1"
+                max="100"
+                disabled={saveLoading.devices?.[device.device_id]}
+              />
+              <button 
+                className="quantity-btn"
+                onClick={handleIncrement}
+                disabled={saveLoading.devices?.[device.device_id]}
+              >
+                +
+              </button>
+            </div>
+            {saveLoading.devices?.[device.device_id] && (
+              <div className="saving-indicator">Сохранение...</div>
+            )}
+          </div>
+        ) : (
+          <span className="device-amount-readonly">{device.amount || 1}</span>
         )}
       </div>
 
-      <div className="device-actions">
-      <button 
-  className="btn-remove-device"
-  onClick={() => onRemoveDevice(device.device_id)}
-  title="Удалить устройство из расчёта"
-  disabled={saveLoading.devices?.[device.device_id]}
->
-  Х
-</button>
-      </div>
+      {/* Сила тока устройства (для всех, но с дефолтным значением) */}
+      <span className="device-amperage">
+       <strong> {device.amperage && device.amperage > 0 ? `${device.amperage.toFixed(2)} А` : '—'}</strong>
+      </span>
+
+      {/* Действия с устройством */}
+      {isDraft && (
+        <div className="device-actions-wrapper">
+          <button 
+            className="btn-save-amount"
+            onClick={handleSave}
+            disabled={saveLoading.devices?.[device.device_id] || localDeviceAmount < 1}
+          >
+            {saveLoading.devices?.[device.device_id] ? '...' : 'Сохранить'}
+          </button>
+          
+          <button 
+            className="btn-remove-device"
+            onClick={() => onRemoveDevice(device.device_id)}
+            title="Удалить устройство из расчёта"
+            disabled={saveLoading.devices?.[device.device_id]}
+          >
+            Х
+          </button>
+        </div>
+      )}
     </li>
   );
 }

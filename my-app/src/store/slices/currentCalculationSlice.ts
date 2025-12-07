@@ -4,12 +4,14 @@ import { api } from '../../api';
 
 interface DeviceCart {
   id?: number;
+  current_id?: number;
   devices_count?: number;
   devices?: any[];
   status?: string;
   creator_login?: string;
-  date_create?: string;
-  date_form?: string;
+  created_at?: string;
+  form_date?: string;
+  voltage_bord?: number;
 }
 
 interface CurrentCalculationDevice {
@@ -25,6 +27,8 @@ interface CurrentCalculationDetail {
   amount: number;
   amperage?: number;
   current_id?: number;
+  voltage_bord?: number;
+  status?: string;
   devices?: CurrentCalculationDevice[];
   [key: string]: any;
 }
@@ -39,6 +43,7 @@ interface CurrentCalculationState {
   saveLoading: {
     amount: boolean;
     devices: { [key: number]: boolean };
+    voltage: boolean;
   };
 }
 
@@ -52,10 +57,9 @@ const initialState: CurrentCalculationState = {
   saveLoading: {
     amount: false,
     devices: {},
+    voltage: false,
   },
 };
-
-
 
 // --- Загрузка корзины
 export const getCurrentCart = createAsyncThunk(
@@ -114,7 +118,33 @@ export const updateDeviceAmount = createAsyncThunk(
   }
 );
 
+// --- Обновление напряжения бортовой сети
+export const updateVoltageBord = createAsyncThunk(
+  'currentCalculation/updateVoltageBord',
+  async ({ currentId, voltage }: { currentId: number; voltage: number }, { rejectWithValue, getState }) => {
+    try {
+      // Проверяем состояние перед обновлением
+      const state = getState() as { currentCalculation: CurrentCalculationState };
+      const calculation = state.currentCalculation.currentDetail || state.currentCalculation.currentCart;
+      
+      // Проверяем, что это черновик
+      if (calculation?.status && calculation.status !== 'draft') {
+        return rejectWithValue('Только черновики можно редактировать');
+      }
 
+      const response = await api.currentCalculations.editCurrentCalculationsUpdate(currentId, {
+        voltage_bord: voltage
+      });
+      
+      return {
+        currentId,
+        voltage: response.data.voltage_bord || voltage
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.description || 'Ошибка обновления напряжения');
+    }
+  }
+);
 
 // --- Получение полной информации о расчёте
 export const getCurrentDetail = createAsyncThunk(
@@ -128,6 +158,8 @@ export const getCurrentDetail = createAsyncThunk(
         amount: data.devices_count || 0,
         amperage: data.amperage,
         current_id: data.current_id,
+        voltage_bord: data.voltage_bord,
+        status: data.status,
         devices: data.devices || [],
         ...data,
       };
@@ -151,6 +183,7 @@ export const formCurrentCalculation = createAsyncThunk(
   }
 );
 
+// --- Удаление заявки
 export const deleteCurrentCalculation = createAsyncThunk(
   'currentCalculation/deleteCurrentCalculation',
   async (currentId: number, { rejectWithValue }) => {
@@ -174,6 +207,7 @@ const currentCalculationSlice = createSlice({
       state.currentCart = null;
       state.devices_count = 0;
       state.current_id = undefined;
+      state.currentDetail = null;
     },
     removeDeviceOptimistic: (state, action) => {
       const deviceId = action.payload;
@@ -187,7 +221,7 @@ const currentCalculationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // --- корзина
+      // --- Обработка загрузки корзины
       .addCase(getCurrentCart.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -205,7 +239,8 @@ const currentCalculationSlice = createSlice({
         state.devices_count = 0;
         state.current_id = undefined;
       })
-      // --- детализация
+      
+      // --- Обработка загрузки деталей расчёта
       .addCase(getCurrentDetail.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -220,7 +255,8 @@ const currentCalculationSlice = createSlice({
         state.error = action.payload as string;
         state.currentDetail = null;
       })
-      // --- добавление устройства
+      
+      // --- Обработка добавления устройства
       .addCase(addToCurrentCalculation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -232,7 +268,8 @@ const currentCalculationSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // --- удаление устройства
+      
+      // --- Обработка удаления устройства
       .addCase(removeFromCurrentCalculation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -244,14 +281,8 @@ const currentCalculationSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-
-
-
-
-
-
-            // --- обновление количества устройства
+      
+      // --- Обработка обновления количества устройства
       .addCase(updateDeviceAmount.pending, (state, action) => {
         const deviceId = action.meta.arg.deviceId;
         state.saveLoading.devices[deviceId] = true;
@@ -282,14 +313,32 @@ const currentCalculationSlice = createSlice({
         state.saveLoading.devices[deviceId] = false;
         state.error = action.payload as string;
       })
-
-
-
-
-
-
-
-      // --- формирование расчёта
+      
+      // --- Обработка обновления напряжения бортовой сети
+      .addCase(updateVoltageBord.pending, (state) => {
+        state.saveLoading.voltage = true;
+        state.error = null;
+      })
+      .addCase(updateVoltageBord.fulfilled, (state, action) => {
+        state.saveLoading.voltage = false;
+        
+        const { currentId, voltage } = action.payload;
+        
+        // Обновляем напряжение в текущих данных
+        if (state.currentCart) {
+          state.currentCart.voltage_bord = voltage;
+        }
+        if (state.currentDetail) {
+          state.currentDetail.voltage_bord = voltage;
+        }
+      })
+      
+      .addCase(updateVoltageBord.rejected, (state, action) => {
+        state.saveLoading.voltage = false;
+        state.error = action.payload as string;
+      })
+      
+      // --- Обработка формирования расчёта
       .addCase(formCurrentCalculation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -301,11 +350,8 @@ const currentCalculationSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-
-
-
-            // --- удаление заявки
+      
+      // --- Обработка удаления заявки
       .addCase(deleteCurrentCalculation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -315,16 +361,18 @@ const currentCalculationSlice = createSlice({
         state.currentCart = null;
         state.devices_count = 0;
         state.current_id = undefined;
+        state.currentDetail = null;
       })
       .addCase(deleteCurrentCalculation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
-
-
-
   },
 });
 
-export const { clearError, clearCurrentCalculation, removeDeviceOptimistic } = currentCalculationSlice.actions;
+export const { 
+  clearError, 
+  clearCurrentCalculation, 
+  removeDeviceOptimistic,
+} = currentCalculationSlice.actions;
 export default currentCalculationSlice.reducer;

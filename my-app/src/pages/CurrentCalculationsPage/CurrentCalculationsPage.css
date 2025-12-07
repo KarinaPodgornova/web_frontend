@@ -203,3 +203,244 @@
     }
 }
 
+/* Стили для фильтров */
+.filters-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .filter-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+  }
+  
+  .filter-select,
+  .filter-input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .filter-select:focus,
+  .filter-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+  }
+  
+  .filter-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  .filter-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-filter-toggle {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .btn-filter-toggle:hover {
+    background-color: #5a6268;
+  }
+  
+  .btn-primary {
+    background-color: #0066cc;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .active-filter {
+    background-color: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .active-filter button {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .active-filter button:hover {
+    color: #bd2130;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  /* Дополнительные стили для таблицы */
+  .currents-table-header span:nth-child(8) {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .currents-table-row span:nth-child(8) {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .draft-row {
+    background-color: #fff3cd;
+  }
+  
+  .draft-row:hover {
+    background-color: #ffeaa7;
+  }
+  
+  .currents-table-row:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .status-draft {
+    background-color: #f9da7f;
+    color: #212529;
+  }
+  
+  .status-formed {
+    background-color: #93ecdf;
+    color: white;
+  }
+  
+  .status-completed {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .status-rejected {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .filters-form {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+      flex-direction: column;
+    }
+    
+    .currents-table-wrapper {
+      overflow-x: auto;
+    }
+    
+    .currents-table-header,
+    .currents-table-row {
+      min-width: 800px;
+    }
+  }
+
+
+  /* Обновляем заголовок таблицы - добавляем 9-ю колонку */
+.currents-table-header {
+    display: grid;
+    grid-template-columns: 80px 120px 120px 120px 120px 120px 120px 100px 100px; /* ДОБАВИЛИ 100px */
+    gap: 15px;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    min-width: 1100px; /* УВЕЛИЧИЛИ ШИРИНУ */
+  }
+  
+  .currents-table-body {
+    min-width: 1100px; /* УВЕЛИЧИЛИ ШИРИНУ */
+  }
+  
+  .currents-table-row {
+    display: grid;
+    grid-template-columns: 80px 120px 120px 120px 120px 120px 120px 100px 100px; /* ДОБАВИЛИ 100px */
+    gap: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+  }
+  
+  /* Стиль для столбца результата */
+  .result-column {
+    font-weight: 600;
+    color: #28a745; /* Зеленый цвет для завершенных заявок */
+    text-align: center;
+  }
+  
+  /* Если результат не отображается (—) */
+  .result-column:contains("—") {
+    color: #6c757d; /* Серый цвет для тире */
+    font-weight: normal;
+  }
