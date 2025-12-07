@@ -1,66 +1,66 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import type { Device } from '../../modules/DevicesTypes'
-import { api } from '../../api'
+// store/slices/deviceSlice.ts
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Device } from '../../modules/DevicesTypes';
 
 interface DevicesState {
-  devices: Device[]
-  loading: boolean
-  error: string | null
+  devices: Device[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: DevicesState = {
   devices: [],
   loading: false,
-  error: null
-}
-
-export const fetchDevices = createAsyncThunk(
-  'devices/fetchDevices',
-  async (searchTitle: string | undefined, { rejectWithValue }) => {
-    try {
-      const response = await api.devices.devicesList({ 
-        device_name: searchTitle 
-      });
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.description || 'Ошибка загрузки устройств');
-    }
-  }
-);
+  error: null,
+};
 
 const devicesSlice = createSlice({
   name: 'devices',
   initialState,
   reducers: {
-    setDevices: (state, action) => {
-      state.devices = action.payload
+    // Синхронные экшены
+    setDevices: (state, action: PayloadAction<Device[]>) => {
+      state.devices = action.payload;
     },
-    setLoading: (state, action) => {
-      state.loading = action.payload
+    
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
-    setError: (state, action) => {
-      state.error = action.payload
+    
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
     },
+    
     clearError: (state) => {
-      state.error = null
-    }
+      state.error = null;
+    },
+    
+    // Для асинхронных операций (если нужно)
+    fetchDevicesStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    
+    fetchDevicesSuccess: (state, action: PayloadAction<Device[]>) => {
+      state.loading = false;
+      state.devices = action.payload;
+    },
+    
+    fetchDevicesFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
   },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchDevices.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchDevices.fulfilled, (state, action) => {
-        state.loading = false;
-        state.devices = action.payload as Device[]; 
-     })
-      .addCase(fetchDevices.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-  }
-})
+});
 
-export const { setDevices, setLoading, setError } = devicesSlice.actions
-export default devicesSlice.reducer
+export const { 
+  setDevices, 
+  setLoading, 
+  setError, 
+  clearError,
+  fetchDevicesStart,
+  fetchDevicesSuccess,
+  fetchDevicesFailure
+} = devicesSlice.actions;
+
+export default devicesSlice.reducer;

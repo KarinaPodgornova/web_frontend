@@ -1,42 +1,59 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import type { AppDispatch, RootState } from '../../store';
-import { loginUser } from '../../store/slices/userSlice';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loginSuccess, loginFailure } from '../../store/slices/userSlice';
+import { loginUser } from '../../modules/UserApi';
 import Header from '../../components/Header/Header';
 import './SignInPage.css';
 
 export default function SignInPage() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state: RootState) => state.user);
   
   const [form, setForm] = useState({
     login: '',
-    password: ''
+    password: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!form.login || !form.password) {
+      setError('Все поля обязательны');
       return;
     }
-
+    
     try {
-      await dispatch(loginUser(form)).unwrap();
-      navigate('/devices');
-    } catch (error) {
+      setLoading(true);
+      setError('');
+      
+      const result = await loginUser(form);
+      
+      if (result?.token) {
+        localStorage.setItem('token', result.token);
+        dispatch(loginSuccess({ username: form.login }));
+        navigate('/devices');
+      } else {
+        throw new Error('Токен не получен');
+      }
+      
+    } catch (err: any) {
+      setError(err.message || 'Ошибка авторизации');
+      dispatch(loginFailure(err.message || 'Ошибка авторизации'));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login-page">
+    <div className="signin-page">
       <Header />
       
-      <div className="login-container">
-        <div className="login-form-wrapper">
-          <h1>Вход в систему</h1>
+      <div className="signin-container">
+        <div className="signin-form-wrapper">
+          <h1>Вход</h1>
           
           {error && (
             <div className="error-message">
@@ -44,7 +61,7 @@ export default function SignInPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="signin-form">
             <div className="form-group">
               <label htmlFor="login">Логин</label>
               <input
@@ -71,21 +88,14 @@ export default function SignInPage() {
               />
             </div>
 
-
             <button 
               type="submit" 
-              className="login-button"
+              className="signin-button"
               disabled={loading || !form.login || !form.password}
             >
               {loading ? 'Вход...' : 'Войти'}
             </button>
           </form>
-
-          <div className="login-links">
-            <p>
-              Нет аккаунта? <Link to="/signup">Зарегистрироваться</Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

@@ -1,27 +1,43 @@
 // components/Header/Header.tsx
 import { type MouseEvent } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../Routes';
 import './Header.css';
 import logo0 from '../../assets/icon-logo.f2ce70f.svg';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
-import { logoutUser } from '../../store/slices/userSlice';
+import { logout } from '../../store/slices/userSlice'; // Только синхронный экшен
+import { logoutUser } from '../../modules/UserApi'; // Чистая функция из модуля
 
 export default function Header() {
+  const navigate = useNavigate();
+  const { isAuthenticated, username } = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch<AppDispatch>();
+
   const handleBurgerClick = (event: MouseEvent<HTMLDivElement>) => {
     event.currentTarget.classList.toggle('active');
   };
-  
-  const { isAuthenticated, username } = useSelector((state: RootState) => state.user);
-  const dispatch = useDispatch<AppDispatch>();
 
   const handleMenuClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
 
-  const handleLogout = () => {
-    dispatch(logoutUser(username));
+  const handleLogout = async () => {
+    try {
+      // Вызываем чистую функцию из модуля
+      await logoutUser();
+      
+      // Диспатчим синхронный экшен для обновления Redux состояния
+      dispatch(logout());
+      
+      // Переходим на главную
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Все равно сбрасываем состояние, даже если запрос не удался
+      dispatch(logout());
+      navigate('/');
+    }
   };
 
   return (
@@ -55,9 +71,9 @@ export default function Header() {
                 <NavLink to={ROUTES.CURRENTS} className="header__link">
                   Мои заявки
                 </NavLink>
-                <Link to={`/`} className="header__link" onClick={handleLogout}>
+                <NavLink to={`/`} className="header__link" onClick={handleLogout}>
                   Выйти
-                </Link>
+                </NavLink>
                 <span className="username">Привет, {username}!</span>
               </div>
             ) : (
@@ -91,9 +107,9 @@ export default function Header() {
                 <NavLink to={ROUTES.CURRENTS} className="header__link">
                   Мои заявки
                 </NavLink>
-                <NavLink to={`/`} className="header__link" onClick={handleLogout}>
+                <button className="header__link logout-btn" onClick={handleLogout}>
                   Выйти
-                </NavLink>
+                </button>
                 <span className="username">Привет, {username}!</span>
               </div>
             ) : (

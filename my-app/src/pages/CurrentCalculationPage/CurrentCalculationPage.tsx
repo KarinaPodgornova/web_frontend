@@ -1,436 +1,356 @@
-// src/pages/CurrentCalculationPage/CurrentCalculationPage.tsx
+// pages/CurrentCalculationPage/CurrentCalculationPage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { useAppSelector } from '../../store/hooks';
 import { 
-  getCurrentCart, 
-  getCurrentDetail,
-  removeFromCurrentCalculation, 
+  getCurrentCalculation, 
+  updateCurrentCalculation,
   formCurrentCalculation,
-  updateDeviceAmount, 
-  deleteCurrentCalculation,
-  updateVoltageBord
-} from '../../store/slices/currentCalculationSlice';
-import { api } from '../../api';
+  deleteCurrentCalculation 
+} from '../../modules/CurrentApi';
+import { 
+  updateCurrentDevice, 
+  deleteCurrentDevice 
+} from '../../modules/CurrentDevicesApi';
 import './CurrentCalculationPage.css';
 import defaultDevice from '../../assets/DefaultImage.jpg';
+
+interface Device {
+  device_id: number;
+  name: string;
+  power_nominal: number;
+  image?: string;
+  amount?: number;
+  amperage?: number;
+}
+
+interface CurrentData {
+  current: {
+    current_id?: number;
+    id?: number;
+    status?: string;
+    voltage_bord?: number;
+    creator_login?: string;
+    created_at?: string;
+    form_date?: string;
+    finish_date?: string;
+    moderator_login?: string;
+  };
+  currentDevices: Array<{
+    device_id: number;
+    amount: number;
+    amperage?: number;
+  }>;
+  devices: Device[];
+}
 
 export default function CurrentCalculationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   
   const { isAuthenticated } = useAppSelector(state => state.user);
-  const { 
-    currentCart, 
-    currentDetail, 
-    loading, 
-    saveLoading
-  } = useAppSelector(state => state.currentCalculation);
 
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [voltageInput, setVoltageInput] = useState<string>('11.5');
-  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [data, setData] = useState<CurrentData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [voltageInput, setVoltageInput] = useState('11.5');
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
-  const [currentStatus, setCurrentStatus] = useState<string>('unknown');
-  const [originalVoltage, setOriginalVoltage] = useState<number | null>(null);
+  const [updatingAmounts, setUpdatingAmounts] = useState<{ [key: number]: boolean }>({});
+  const [updatingVoltage, setUpdatingVoltage] = useState(false);
 
+  // Показать уведомление
   const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
+    if (type === 'success') {
+      setSuccess(message);
+      setError('');
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError(message);
+      setSuccess('');
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
-  // Функция для получения ID текущего расчёта
-  const getCurrentId = (): number | null => {
-    if (id) {
-      return parseInt(id);
-    }
+  // Загрузить данные заявки
+  const loadCurrentData = async () => {
+    if (!id) return;
     
-    if (currentCart?.current_id) {
-      return currentCart.current_id;
-    }
-    if (currentCart?.id) {
-      return currentCart.id;
-    }
-    
-    return null;
-  };
-
-  // Функция для получения текущего напряжения
-  const getCurrentVoltage = (): number => {
-    const currentId = getCurrentId();
-    
-    // 1. Проверяем localStorage для этой заявки
-    if (currentId) {
-      const savedVoltage = localStorage.getItem(`voltage_${currentId}`);
-      if (savedVoltage) {
-        return parseFloat(savedVoltage);
-      }
-    }
-    
-    // 2. Из текущих деталей (приоритет)
-    if (id && currentDetail?.voltage_bord !== undefined) {
-      // Сохраняем в localStorage при первом получении
-      if (currentId) {
-        localStorage.setItem(`voltage_${currentId}`, currentDetail.voltage_bord.toString());
-      }
-      return currentDetail.voltage_bord;
-    }
-    
-    // 3. Из корзины
-    if (currentCart?.voltage_bord !== undefined) {
-      // Сохраняем в localStorage при первом получении
-      const currentId = getCurrentId();
-      if (currentId) {
-        localStorage.setItem(`voltage_${currentId}`, currentCart.voltage_bord.toString());
-      }
-      return currentCart.voltage_bord;
-    }
-    
-    // 4. Дефолтное значение
-    return 11.5;
-  };
-
-  // Функция для получения актуального статуса
-  const getCalculationStatus = (): string => {
-    // Приоритет: детали -> корзина -> локальный статус
-    if (currentDetail?.status) {
-      return currentDetail.status;
-    }
-    if (currentCart?.status) {
-      return currentCart.status;
-    }
-    return currentStatus;
-  };
-
-  // Функция для получения общей силы тока
-  const getTotalAmperage = (): number | null => {
-    // Проверяем разные источники данных
-    if (id && currentDetail) {
-      // 1. Из currentDetail.total_amperage
-      if (currentDetail.total_amperage !== undefined && currentDetail.total_amperage !== null) {
-        return currentDetail.total_amperage;
+    setLoading(true);
+    try {
+      const currentData = await getCurrentCalculation(parseInt(id));
+      
+      if (!currentData) {
+        throw new Error('Заявка не найдена');
       }
       
-      // 2. Из currentDetail.amperage
-      if (currentDetail.amperage !== undefined && currentDetail.amperage !== null) {
-        return currentDetail.amperage;
+      setData(currentData);
+      
+      // Устанавливаем напряжение если есть
+      if (currentData.current?.voltage_bord) {
+        setVoltageInput(currentData.current.voltage_bord.toString());
       }
       
-      // 3. Из devices_with_amperage (суммируем если есть)
-      if (currentDetail.devices_with_amperage && Array.isArray(currentDetail.devices_with_amperage)) {
-        const sum = currentDetail.devices_with_amperage.reduce((total: number, device: any) => {
-          return total + (device.amperage || 0);
-        }, 0);
-        if (sum > 0) return sum;
-      }
-      
-      // 4. Из currentDevices (суммируем если есть)
-      if (currentDetail.currentDevices && Array.isArray(currentDetail.currentDevices)) {
-        const sum = currentDetail.currentDevices.reduce((total: number, device: any) => {
-          return total + (device.amperage || 0);
-        }, 0);
-        if (sum > 0) return sum;
-      }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка загрузки заявки');
+      console.error('Error loading current:', err);
+    } finally {
+      setLoading(false);
     }
-    
-    return null;
   };
 
-  // Функция для получения списка устройств
-  const getDevices = () => {
-    const data = id ? currentDetail : currentCart;
+  // Обновить напряжение
+  const handleUpdateVoltage = async () => {
+    if (!id || !data?.current) return;
     
-    if (!data) return [];
+    const voltageValue = parseFloat(voltageInput);
+    if (isNaN(voltageValue) || voltageValue <= 0) {
+      showNotification('error', 'Введите корректное значение напряжения');
+      return;
+    }
     
-    if (id && currentDetail) {
-      const devices = currentDetail.devices || [];
-      const currentDevices = (currentDetail as any).currentDevices || (currentDetail as any).current_devices || [];
+    if (data.current.status !== 'draft') {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
+    }
+    
+    setUpdatingVoltage(true);
+    try {
+      const result = await updateCurrentCalculation(parseInt(id), {
+        voltage_bord: voltageValue
+      });
       
-      if (currentDevices.length > 0) {
-        return devices.map((device: any) => {
-          const currentDevice = currentDevices.find((cd: any) => 
-            cd.device_id === device.device_id || cd.device_id === device.id
+      if (result) {
+        // Обновляем локальное состояние
+        setData(prev => prev ? {
+          ...prev,
+          current: {
+            ...prev.current,
+            voltage_bord: voltageValue
+          }
+        } : null);
+        
+        showNotification('success', 'Напряжение обновлено');
+      }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка обновления напряжения');
+    } finally {
+      setUpdatingVoltage(false);
+    }
+  };
+
+  // Обновить количество устройства
+  const handleUpdateDeviceAmount = async (deviceId: number, newAmount: number) => {
+    if (!id || !data?.current) return;
+    
+    if (data.current.status !== 'draft') {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
+    }
+    
+    if (newAmount < 1) {
+      showNotification('error', 'Количество должно быть больше 0');
+      return;
+    }
+    
+    setUpdatingAmounts(prev => ({ ...prev, [deviceId]: true }));
+    
+    try {
+      const result = await updateCurrentDevice(deviceId, parseInt(id), { amount: newAmount });
+      
+      if (result) {
+        // Обновляем локальное состояние
+        setData(prev => {
+          if (!prev) return null;
+          
+          const updatedCurrentDevices = prev.currentDevices.map(cd => 
+            cd.device_id === deviceId ? { ...cd, amount: newAmount } : cd
           );
           
           return {
-            ...device,
-            id: device.device_id || device.id,
-            amount: currentDevice?.amount || device.amount || 1,
-            amperage: currentDevice?.amperage || 0,
+            ...prev,
+            currentDevices: updatedCurrentDevices
           };
         });
+        
+        showNotification('success', 'Количество обновлено');
       }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка обновления количества');
+    } finally {
+      setUpdatingAmounts(prev => ({ ...prev, [deviceId]: false }));
+    }
+  };
+
+  // Удалить устройство
+  const handleRemoveDevice = async (deviceId: number) => {
+    if (!id || !data?.current) return;
+    
+    if (data.current.status !== 'draft') {
+      showNotification('error', 'Только черновики можно редактировать');
+      return;
     }
     
-    const devices = data.devices || [];
-    return devices.map((device: any) => ({
-      ...device,
-      id: device.device_id || device.id,
-      amount: device.amount || 1,
-      amperage: 0,
-    }));
+    if (!window.confirm('Удалить устройство из расчёта?')) return;
+    
+    try {
+      const result = await deleteCurrentDevice(deviceId, parseInt(id));
+      
+      if (result) {
+        // Обновляем локальное состояние
+        setData(prev => {
+          if (!prev) return null;
+          
+          const updatedCurrentDevices = prev.currentDevices.filter(cd => cd.device_id !== deviceId);
+          const updatedDevices = prev.devices.filter(d => d.device_id !== deviceId);
+          
+          return {
+            ...prev,
+            currentDevices: updatedCurrentDevices,
+            devices: updatedDevices
+          };
+        });
+        
+        showNotification('success', 'Устройство удалено');
+      }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка удаления устройства');
+    }
   };
 
-  // Функция для обработки ошибок загрузки изображений
+  // Подтвердить заявку
+  const handleFormCalculation = async () => {
+    if (!id || !data?.current) return;
+    
+    if (data.current.status !== 'draft') {
+      showNotification('error', 'Только черновики можно подтверждать');
+      return;
+    }
+    
+    if (data.devices.length === 0) {
+      showNotification('error', 'Добавьте устройства в расчёт');
+      return;
+    }
+    
+    try {
+      const result = await formCurrentCalculation(parseInt(id));
+      
+      if (result) {
+        // Обновляем статус
+        setData(prev => prev ? {
+          ...prev,
+          current: {
+            ...prev.current,
+            status: 'formed'
+          }
+        } : null);
+        
+        showNotification('success', 'Заявка подтверждена!');
+        
+        // Через 2 секунды переходим к списку заявок
+        setTimeout(() => {
+          navigate('/currents');
+        }, 2000);
+      }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка подтверждения заявки');
+    }
+  };
+
+  // Удалить заявку
+  const handleDeleteCalculation = async () => {
+    if (!id || !data?.current) return;
+    
+    if (data.current.status !== 'draft') {
+      showNotification('error', 'Только черновики можно удалять');
+      return;
+    }
+    
+    if (!window.confirm('Вы уверены, что хотите удалить заявку?')) return;
+    
+    try {
+      const result = await deleteCurrentCalculation(parseInt(id));
+      
+      if (result) {
+        showNotification('success', 'Заявка удалена');
+        
+        // Через 1 секунду переходим к устройствам
+        setTimeout(() => {
+          navigate('/devices');
+        }, 1000);
+      }
+    } catch (err: any) {
+      showNotification('error', err.message || 'Ошибка удаления заявки');
+    }
+  };
+
+  // Обработчик ошибок изображений
   const handleImageError = (deviceId: number) => {
-    setImageErrors(prev => ({
-      ...prev,
-      [deviceId]: true
-    }));
+    setImageErrors(prev => ({ ...prev, [deviceId]: true }));
   };
 
-  // Функция для получения URL изображения
-  const getImageUrl = (device: any) => {
+  // Получить URL изображения
+  const getImageUrl = (device: Device) => {
     if (imageErrors[device.device_id] || !device.image) {
       return defaultDevice;
     }
     return `http://localhost:9000/lab1/img/${device.image}`;
   };
 
-  // Функция для сохранения количества устройств
-  const handleSaveDeviceAmount = async (deviceId: number, amount: number) => {
-    const currentId = getCurrentId();
-    const status = getCalculationStatus();
-    
-    if (!currentId || status !== "draft") {
-      showNotification('error', 'Только черновики можно редактировать');
-      return;
-    }
-    
-    if (amount < 1) {
-      showNotification('error', 'Количество должно быть больше 0');
-      return;
-    }
-    
-    try {
-      await dispatch(updateDeviceAmount({
-        deviceId,
-        currentId: currentId,
-        amount: amount
-      })).unwrap();
-      
-      showNotification('success', 'Количество сохранено!');
-      
-      // Обновляем данные через секунду
-      setTimeout(() => {
-        if (id) {
-          dispatch(getCurrentDetail(parseInt(id)));
-        } else {
-          dispatch(getCurrentCart());
-        }
-      }, 500);
-      
-    } catch (error: any) {
-      console.error('Ошибка сохранения количества:', error);
-      showNotification('error', `Ошибка сохранения количества: ${error.message || 'Неизвестная ошибка'}`);
-    }
+  // Перейти на страницу устройства
+  const handleOpenDevice = (deviceId: number) => {
+    navigate(`/devices/${deviceId}`);
   };
 
-  // Функция для обновления напряжения бортовой сети
-  const handleUpdateVoltage = async () => {
-    const currentId = getCurrentId();
-    const status = getCalculationStatus();
+  // Получить количество устройства
+  const getDeviceAmount = (deviceId: number): number => {
+    if (!data?.currentDevices) return 1;
+    const currentDevice = data.currentDevices.find(cd => cd.device_id === deviceId);
+    return currentDevice?.amount || 1;
+  };
+
+  // Получить силу тока устройства
+  const getDeviceAmperage = (deviceId: number): number => {
+    if (!data?.currentDevices) return 0;
+    const currentDevice = data.currentDevices.find(cd => cd.device_id === deviceId);
+    return currentDevice?.amperage || 0;
+  };
+
+  // Рассчитать общую силу тока
+  const calculateTotalAmperage = (): number => {
+    if (!data?.currentDevices) return 0;
     
-    if (!currentId) {
-      showNotification('error', 'Заявка не найдена');
-      return;
-    }
-
-    if (status !== "draft") {
-      showNotification('error', 'Только черновики можно редактировать');
-      return;
-    }
-
-    const voltageValue = parseFloat(voltageInput);
-    if (isNaN(voltageValue)) {
-      showNotification('error', 'Введите корректное значение напряжения');
-      return;
-    }
-
-    if (voltageValue <= 0 || voltageValue > 48) {
-      showNotification('error', 'Напряжение должно быть в диапазоне 0.1-48 В');
-      return;
-    }
-
-    try {
-      await dispatch(updateVoltageBord({
-        currentId,
-        voltage: voltageValue
-      })).unwrap();
-      
-      // Сохраняем в localStorage для этой заявки
-      localStorage.setItem(`voltage_${currentId}`, voltageValue.toString());
-      
-      // Сохраняем новое значение как оригинальное
-      setOriginalVoltage(voltageValue);
-      
-      showNotification('success', 'Напряжение сохранено!');
-      
-      // Обновляем данные через секунду
-      setTimeout(() => {
-        if (id) {
-          dispatch(getCurrentDetail(parseInt(id)));
-        } else {
-          dispatch(getCurrentCart());
-        }
-      }, 500);
-      
-    } catch (error: any) {
-      console.error('Ошибка сохранения напряжения:', error);
-      showNotification('error', error.message || 'Ошибка сохранения напряжения');
-    }
+    return data.currentDevices.reduce((total, cd) => {
+      return total + (cd.amperage || 0);
+    }, 0);
   };
 
-  // Функция для загрузки статуса заявки
-  const loadCurrentStatus = async () => {
-    if (!id) {
-      // Для корзины статус всегда черновик
-      setCurrentStatus('draft');
-      return;
-    }
-
-    try {
-      const response = await api.currentCalculations.currentCalculationsList();
-      const calculations = response.data;
-      
-      const currentCalculation = calculations.find(
-        (calc: any) => calc.current_id === parseInt(id) || calc.id === parseInt(id)
-      );
-      
-      if (currentCalculation?.status) {
-        setCurrentStatus(currentCalculation.status);
-      } else {
-        setCurrentStatus('draft');
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки статуса:', error);
-      setCurrentStatus('unknown');
-    }
+  // Форматировать статус
+  const getStatusText = (status?: string): string => {
+    const statusMap: Record<string, string> = {
+      'draft': 'Черновик',
+      'formed': 'Сформирована',
+      'completed': 'Завершена',
+      'finished': 'Завершена',
+      'rejected': 'Отклонена',
+      'declined': 'Отклонена',
+    };
+    return status ? statusMap[status] || status : '—';
   };
 
-  // Инициализация напряжения при загрузке данных
-  useEffect(() => {
-    const voltage = getCurrentVoltage();
-    setVoltageInput(voltage.toString());
-    setOriginalVoltage(voltage);
-  }, [currentCart, currentDetail, id]);
-
-  // Загрузка данных при монтировании
+  // Загрузка при монтировании
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/signin');
       return;
     }
     
-    const loadData = async () => {
-      try {
-        if (id) {
-          await dispatch(getCurrentDetail(parseInt(id)));
-          await loadCurrentStatus();
-        } else {
-          await dispatch(getCurrentCart());
-          setCurrentStatus('draft');
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
-    };
+    loadCurrentData();
+  }, [isAuthenticated, navigate, id]);
 
-    loadData();
-  }, [isAuthenticated, dispatch, navigate, id]);
-
-  // Функция для открытия страницы устройства
-  const handleOpenDevice = (deviceId: number) => {
-    navigate(`/devices/${deviceId}`);
-  };
-
-  // Функция для удаления устройства из расчёта
-  const handleRemoveDevice = async (deviceId: number) => {
-    const currentId = getCurrentId();
-    const status = getCalculationStatus();
-    
-    if (!currentId || status !== "draft") {
-      showNotification('error', 'Только черновики можно редактировать');
-      return;
-    }
-
-    if (!window.confirm('Вы уверены, что хотите удалить устройство из расчёта?')) return;
-
-    try {
-      await dispatch(removeFromCurrentCalculation({ 
-        deviceId, 
-        currentId: currentId
-      })).unwrap();
-      
-      if (id) {
-        dispatch(getCurrentDetail(parseInt(id)));
-      } else {
-        dispatch(getCurrentCart());
-      }
-      
-      showNotification('success', 'Устройство удалено из расчёта!');
-    } catch (err) {
-      console.error('Ошибка удаления устройства', err);
-      showNotification('error', 'Ошибка удаления устройства');
-    }
-  };
-
-  // Функция для удаления заявки
-  const handleDeleteCalculation = async () => {
-    const currentId = getCurrentId();
-    const status = getCalculationStatus();
-    
-    if (!currentId || status !== "draft") {
-      showNotification('error', 'Только черновики можно удалять');
-      return;
-    }
-  
-    if (!window.confirm('Вы уверены, что хотите удалить заявку?')) return;
-  
-    try {
-      await dispatch(deleteCurrentCalculation(currentId)).unwrap();
-      showNotification('success', 'Заявка удалена!');
-      setTimeout(() => navigate('/devices'), 1000);
-    } catch (err) {
-      console.error('Ошибка удаления заявки', err);
-      showNotification('error', 'Ошибка удаления заявки');
-    }
-  };
-
-  // Функция для подтверждения расчёта
-  const handleFormCalculation = async () => {
-    const currentId = getCurrentId();
-    const status = getCalculationStatus();
-    
-    if (!currentId || status !== "draft") {
-      showNotification('error', 'Только черновики можно подтверждать');
-      return;
-    }
-
-    setSubmitLoading(true);
-    try {
-      await dispatch(formCurrentCalculation(currentId)).unwrap();
-      showNotification('success', 'Расчёт подтверждён!');
-      
-      // Обновляем статус
-      setCurrentStatus('formed');
-      
-      setTimeout(() => {
-        navigate('/devices');
-      }, 2000);
-    } catch (err) {
-      console.error('Ошибка подтверждения расчёта', err);
-      showNotification('error', 'Ошибка подтверждения расчёта');
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
-  
-  // Показываем загрузку
   if (loading) {
     return (
       <div className="current-calculation-page">
@@ -440,52 +360,27 @@ export default function CurrentCalculationPage() {
     );
   }
 
-  // Получаем данные для отображения
-  const devices = getDevices();
-  const hasDevices = devices.length > 0;
-  const actualStatus = getCalculationStatus();
-  const isDraft = actualStatus === "draft";
-  const isCompleted = actualStatus === "completed" || actualStatus === "finished";
-  const currentVoltage = getCurrentVoltage();
-  const hasVoltageChanged = originalVoltage !== null && parseFloat(voltageInput) !== originalVoltage;
-  const canEditVoltage = isDraft && !saveLoading.voltage;
-  
-  // Получаем общую силу тока
-  const totalAmperage = getTotalAmperage();
-  const showAmperage = !isDraft && totalAmperage !== null;
-
-  // Проверяем наличие данных
-  const hasData = (id && currentDetail) || (!id && currentCart);
-  if (!hasData && !loading) {
+  if (!data) {
     return (
       <div className="current-calculation-page">
         <Header />
-        <div className="empty-cart">
-          <p>Заявка не найдена</p>
+        <div className="not-found">
+          <h2>Заявка не найдена</h2>
           <button 
-            className="btn-primary-back"
+            className="btn-primary"
             onClick={() => navigate('/devices')}
           >
-            Перейти к устройствам
+            Вернуться к устройствам
           </button>
         </div>
       </div>
     );
   }
 
-  // Функция для отображения статуса
-  const getStatusDisplayText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      'draft': 'Черновик',
-      'formed': 'Сформирована',
-      'completed': 'Завершена',
-      'rejected': 'Отклонена',
-      'finished': 'Завершена',
-      'declined': 'Отклонена',
-      'unknown': 'Неизвестно'
-    };
-    return statusMap[status] || status;
-  };
+  const current = data.current;
+  const devices = data.devices || [];
+  const isDraft = current.status === 'draft';
+  const totalAmperage = calculateTotalAmperage();
 
   return (
     <div className="current-calculation-page">
@@ -494,298 +389,279 @@ export default function CurrentCalculationPage() {
       <BreadCrumbs
         crumbs={[
           { label: ROUTE_LABELS.CURRENTS, path: '/currents' },
-          { label: id ? `Расчёт №${id}` : ROUTE_LABELS.CURRENT },
+          { label: `Расчёт №${current.current_id || current.id || id}` },
         ]}
       />
       
       <main>
         <div className="current-header">
-          <h1>
-            {id ? `Расчёт №${id}` : `Моя корзина`}
-          </h1>
+          <h1>Расчёт №{current.current_id || current.id || id}</h1>
           
-          <p>
-            Всего устройств: {devices.length}
-          </p>
-          <p>Статус: <strong className={`status-${actualStatus}`}>{getStatusDisplayText(actualStatus)}</strong></p>
+          <div className="current-info">
+            <div className="info-item">
+              <span className="info-label">Статус:</span>
+              <span className={`status-badge status-${current.status}`}>
+                {getStatusText(current.status)}
+              </span>
+            </div>
+            
+            <div className="info-item">
+              <span className="info-label">Создатель:</span>
+              <span>{current.creator_login || '—'}</span>
+            </div>
+            
+            <div className="info-item">
+              <span className="info-label">Дата создания:</span>
+              <span>{current.created_at ? new Date(current.created_at).toLocaleDateString('ru-RU') : '—'}</span>
+            </div>
+            
+            <div className="info-item">
+              <span className="info-label">Устройств:</span>
+              <span>{devices.length}</span>
+            </div>
+          </div>
         </div>
 
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
+        {error && (
+          <div className="notification error">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="notification success">
+            {success}
           </div>
         )}
 
-        {/* Секция напряжения бортовой сети и силы тока */}
+        {/* Секция напряжения и силы тока */}
         <div className="voltage-amperage-section">
-        {/* Секция напряжения бортовой сети и силы тока в одной строке */}
-<div className="voltage-amperage-single-line">
-  <div className="voltage-control-group">
-    <label htmlFor="voltage-input" className="voltage-label">
-      Напряжение бортовой сети:
-    </label>
-    <div className="voltage-input-group">
-      <div className="voltage-input-wrapper">
-        <input
-          id="voltage-input"
-          type="number"
-          className="voltage-input"
-          value={voltageInput}
-          onChange={(e) => setVoltageInput(e.target.value)}
-          step="0.1"
-          min="0.1"
-          max="48"
-          disabled={!isDraft || saveLoading.voltage}
-          placeholder="В"
-        />
-        <span className="voltage-unit">В</span>
-      </div>
-      
-      {isDraft ? (
-        <div className="voltage-actions">
-          <button
-            className="btn-save-voltage"
-            onClick={handleUpdateVoltage}
-            disabled={!canEditVoltage || !hasVoltageChanged}
-          >
-            {saveLoading.voltage ? 'Сохранение...' : 'Сохранить'}
-          </button>
-          {hasVoltageChanged && (
-            <span className="voltage-hint">
-              Нажмите "Сохранить" для применения
+          <div className="voltage-control">
+            <label htmlFor="voltage-input">
+              Напряжение бортовой сети:
+            </label>
+            <div className="voltage-input-group">
+              <input
+                id="voltage-input"
+                type="number"
+                value={voltageInput}
+                onChange={(e) => setVoltageInput(e.target.value)}
+                step="0.1"
+                min="0.1"
+                max="48"
+                disabled={!isDraft || updatingVoltage}
+                className="voltage-input"
+              />
+              <span className="voltage-unit">В</span>
+            </div>
+            
+            {isDraft && (
+              <button
+                onClick={handleUpdateVoltage}
+                disabled={updatingVoltage || parseFloat(voltageInput) === current.voltage_bord}
+                className="btn-save-voltage"
+              >
+                {updatingVoltage ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            )}
+          </div>
+          
+          <div className="amperage-display">
+            <span className="amperage-label">Необходимая сила тока:</span>
+            <span className="amperage-value">
+              {totalAmperage > 0 ? `${totalAmperage.toFixed(2)} А` : '—'}
             </span>
-          )}
-        </div>
-      ) : null}
-    </div>
-  </div>
-
-  <div className="amperage-control-group">
-    <label className="amperage-label">
-      Необходимая сила тока:
-    </label>
-    <div className="amperage-display">
-      {showAmperage ? (
-        <span className="amperage-value">
-           <strong>{totalAmperage?.toFixed(2)} А</strong>
-        </span>
-      ) : (
-        <span className="amperage-empty">—</span>
-      )}
-    </div>
-  </div>
-</div>
-
-        </div>
-
-        {/* Заголовок таблицы устройств */}
-        <div className="current-devices-table-header">
-          <span className="image-header"></span>
-          <span className="device-title-header">Устройство</span>
-          <span className="device-power-header">Мощность устройства</span>
-          <span className="amount-header">Количество</span>
-          <span className="amperage-header">Необходимая сила тока</span>
-          {isDraft && <span className="actions-header">Действия</span>}
+          </div>
         </div>
 
         {/* Список устройств */}
-        {hasDevices ? (
-          <ul className="current-devices-list">
-            {devices.map((device: any) => (
-              <CurrentDeviceRow 
-                key={device.device_id}
-                device={device}
-                onOpenDevice={handleOpenDevice}
-                onRemoveDevice={handleRemoveDevice}
-                onSaveDeviceAmount={handleSaveDeviceAmount}
-                saveLoading={saveLoading}
-                getImageUrl={getImageUrl}
-                handleImageError={handleImageError}
-                isDraft={isDraft}
-              />
-            ))}
-          </ul>
-        ) : (
-          <div className="no-devices">
-            <p>Устройства отсутствуют</p>
+        <div className="devices-section">
+          <h2>Устройства в расчёте</h2>
+          
+          {devices.length === 0 ? (
+            <div className="no-devices">
+              <p>Устройства отсутствуют</p>
+              <button 
+                className="btn-primary"
+                onClick={() => navigate('/devices')}
+              >
+                Добавить устройства
+              </button>
+            </div>
+          ) : (
+            <div className="devices-table">
+              <div className="devices-table-header">
+                <span className="col-image"></span>
+                <span className="col-name">Устройство</span>
+                <span className="col-power">Мощность</span>
+                <span className="col-amount">Количество</span>
+                <span className="col-amperage">Сила тока</span>
+                {isDraft && <span className="col-actions">Действия</span>}
+              </div>
+              
+              <div className="devices-table-body">
+                {devices.map(device => (
+                  <DeviceRow
+                    key={device.device_id}
+                    device={device}
+                    amount={getDeviceAmount(device.device_id)}
+                    amperage={getDeviceAmperage(device.device_id)}
+                    isDraft={isDraft}
+                    updating={updatingAmounts[device.device_id] || false}
+                    getImageUrl={() => getImageUrl(device)}
+                    onImageError={() => handleImageError(device.device_id)}
+                    onOpenDevice={() => handleOpenDevice(device.device_id)}
+                    onUpdateAmount={(newAmount) => handleUpdateDeviceAmount(device.device_id, newAmount)}
+                    onRemove={() => handleRemoveDevice(device.device_id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Действия с заявкой */}
+        {isDraft && (
+          <div className="current-actions">
             <button 
-              className="btn-primary-back"
-              onClick={() => navigate('/devices')}
+              className="btn-danger"
+              onClick={handleDeleteCalculation}
+              disabled={devices.length === 0}
             >
-              Добавить устройства
+              Удалить заявку
+            </button>
+            
+            <button 
+              className="btn-confirm"
+              onClick={handleFormCalculation}
+              disabled={devices.length === 0}
+            >
+              Сформировать расчёт
             </button>
           </div>
         )}
-
-        {/* Действия с заявкой */}
-        <div className="calculation-actions">
-          {isDraft ? (
-            <>
-              <button 
-                className="btn-primary-danger" 
-                onClick={handleDeleteCalculation}
-                disabled={submitLoading || saveLoading.voltage}
-              >
-                Удалить заявку
-              </button>
-              
-              <button 
-                className="btn-confirm-calculation" 
-                onClick={handleFormCalculation}
-                disabled={submitLoading || saveLoading.voltage || !hasDevices}
-              >
-                {submitLoading ? 'Подтверждение...' : 'Сформировать расчёт'}
-              </button>
-            </>
-          ) : (
-            null
-          )}
-        </div>
       </main>
     </div>
   );
 }
 
 // Компонент строки устройства
-function CurrentDeviceRow({ 
-  device, 
-  onOpenDevice, 
-  onRemoveDevice,
-  onSaveDeviceAmount,
-  saveLoading,
+function DeviceRow({
+  device,
+  amount,
+  amperage,
+  isDraft,
+  updating,
   getImageUrl,
-  handleImageError,
-  isDraft = false,
-}: any) {
-  const [localDeviceAmount, setLocalDeviceAmount] = useState(device.amount || 1);
+  onImageError,
+  onOpenDevice,
+  onUpdateAmount,
+  onRemove
+}: {
+  device: Device;
+  amount: number;
+  amperage: number;
+  isDraft: boolean;
+  updating: boolean;
+  getImageUrl: () => string;
+  onImageError: () => void;
+  onOpenDevice: () => void;
+  onUpdateAmount: (amount: number) => void;
+  onRemove: () => void;
+}) {
+  const [localAmount, setLocalAmount] = useState(amount);
 
-  // Синхронизируем локальное состояние с пропсами
-  useEffect(() => {
-    setLocalDeviceAmount(device.amount || 1);
-  }, [device.amount]);
-
-  // Обработчик изменения количества
-  const handleAmountChange = (value: number) => {
-    if (!isDraft) return;
-    setLocalDeviceAmount(value);
-  };
-
-  // Увеличение количества
-  const handleIncrement = () => {
-    if (!isDraft) return;
-    
-    const newAmount = parseInt(localDeviceAmount.toString()) + 1;
-    setLocalDeviceAmount(newAmount);
-  };
-
-  // Уменьшение количества
-  const handleDecrement = () => {
-    if (!isDraft) return;
-    
-    const newAmount = Math.max(1, parseInt(localDeviceAmount.toString()) - 1);
-    setLocalDeviceAmount(newAmount);
-  };
-
-  // Сохранение количества
-  const handleSave = () => {
-    if (!isDraft) return;
-    
-    const amountValue = parseInt(localDeviceAmount.toString());
-    if (!isNaN(amountValue) && amountValue >= 1) {
-      onSaveDeviceAmount(device.device_id, amountValue);
+  const handleSaveAmount = () => {
+    if (localAmount !== amount) {
+      onUpdateAmount(localAmount);
     }
   };
 
+  const handleIncrement = () => {
+    if (!isDraft) return;
+    setLocalAmount(prev => prev + 1);
+  };
+
+  const handleDecrement = () => {
+    if (!isDraft) return;
+    setLocalAmount(prev => Math.max(1, prev - 1));
+  };
+
   return (
-    <li className="current-device-item">
-      {/* Изображение устройства */}
-      <div className="device-image-container">
+    <div className="device-row">
+      <div className="col-image">
         <img 
-          src={getImageUrl(device)}
+          src={getImageUrl()}
           alt={device.name}
-          onError={() => handleImageError(device.device_id)}
+          onError={onImageError}
           className="device-image"
         />
       </div>
       
-      {/* Информация об устройстве */}
-      <div className="device-info">
-        <span 
-          className="device-name" 
-          onClick={() => onOpenDevice(device.device_id)}
-          style={{ cursor: 'pointer', color: '#0066cc' }}
-        >
-          {device.name || `Устройство ${device.device_id}`}
-        </span>
+      <div className="col-name" onClick={onOpenDevice} style={{ cursor: 'pointer' }}>
+        {device.name}
       </div>
-
-      {/* Мощность устройства */}
-      <span className="device-power">{device.power_nominal} Вт</span>
       
-      {/* Управление количеством */}
-      <div className="amount-controls">
+      <div className="col-power">
+        {device.power_nominal} Вт
+      </div>
+      
+      <div className="col-amount">
         {isDraft ? (
-          <div className="quantity-controls-wrapper">
-            <div className="quantity-controls">
+          <div className="amount-controls">
+            <div className="amount-input-group">
               <button 
-                className="quantity-btn"
+                className="amount-btn"
                 onClick={handleDecrement}
-                disabled={saveLoading.devices?.[device.device_id]}
+                disabled={updating}
               >
                 -
               </button>
-              <input 
-                type="number" 
-                className="quantity-input"
-                value={localDeviceAmount}
-                onChange={(e) => handleAmountChange(parseInt(e.target.value) || 1)}
+              <input
+                type="number"
+                value={localAmount}
+                onChange={(e) => setLocalAmount(parseInt(e.target.value) || 1)}
                 min="1"
-                max="100"
-                disabled={saveLoading.devices?.[device.device_id]}
+                disabled={updating}
+                className="amount-input"
               />
               <button 
-                className="quantity-btn"
+                className="amount-btn"
                 onClick={handleIncrement}
-                disabled={saveLoading.devices?.[device.device_id]}
+                disabled={updating}
               >
                 +
               </button>
             </div>
-            {saveLoading.devices?.[device.device_id] && (
-              <div className="saving-indicator">Сохранение...</div>
-            )}
+            <button
+              onClick={handleSaveAmount}
+              disabled={updating || localAmount === amount}
+              className="btn-save-amount"
+            >
+              {updating ? '...' : 'Сохранить'}
+            </button>
           </div>
         ) : (
-          <span className="device-amount-readonly">{device.amount || 1}</span>
+          <span className="amount-readonly">{amount}</span>
         )}
       </div>
-
-      {/* Сила тока устройства (для всех, но с дефолтным значением) */}
-      <span className="device-amperage">
-       <strong> {device.amperage && device.amperage > 0 ? `${device.amperage.toFixed(2)} А` : '—'}</strong>
-      </span>
-
-      {/* Действия с устройством */}
+      
+      <div className="col-amperage">
+        {amperage > 0 ? `${amperage.toFixed(2)} А` : '—'}
+      </div>
+      
       {isDraft && (
-        <div className="device-actions-wrapper">
+        <div className="col-actions">
           <button 
-            className="btn-save-amount"
-            onClick={handleSave}
-            disabled={saveLoading.devices?.[device.device_id] || localDeviceAmount < 1}
+            className="btn-remove"
+            onClick={onRemove}
+            disabled={updating}
+            title="Удалить из расчёта"
           >
-            {saveLoading.devices?.[device.device_id] ? '...' : 'Сохранить'}
-          </button>
-          
-          <button 
-            className="btn-remove-device"
-            onClick={() => onRemoveDevice(device.device_id)}
-            title="Удалить устройство из расчёта"
-            disabled={saveLoading.devices?.[device.device_id]}
-          >
-            Х
+            ✕
           </button>
         </div>
       )}
-    </li>
+    </div>
   );
 }

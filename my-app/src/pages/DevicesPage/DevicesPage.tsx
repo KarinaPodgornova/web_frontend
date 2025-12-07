@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react'; // Добавить useState
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Search from '../../components/Search/Search';
@@ -8,47 +8,71 @@ import CartButton from '../../components/CartButton/CartButton';
 import { ROUTE_LABELS } from '../../Routes';
 
 import { listDevices } from '../../modules/DevicesApi';
+import { getCurrentCart } from '../../modules/CurrentApi'; // Импорт из модуля, НЕ из слайса!
 import { DEVICES_MOCK } from '../../modules/mock';
 
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setDevices, setLoading } from '../../store/slices/deviceSlice';
 import { setSearchName, addToHistory } from '../../store/slices/searchSlice';
-import { getCurrentCart } from '../../store/slices/currentCalculationSlice';
+import { setCurrentCart } from '../../store/slices/currentCalculationSlice'; // ТОЛЬКО синхронный экшен
 
 import './DevicesPage.css';
 
 export default function DevicesPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [loadingCart, setLoadingCart] = useState(false); // Локальное состояние для загрузки корзины
 
   const { devices, loading } = useAppSelector(state => state.devices);
   const { searchTitle } = useAppSelector(state => state.search);
   const { isAuthenticated } = useAppSelector(state => state.user);
   const { currentCart, devices_count } = useAppSelector(state => state.currentCalculation);
 
-
   // --- загрузка устройств
-  const loadDevices = async (searchQuery?: string) => {
-    dispatch(setLoading(true));
+// В DevicesPage.tsx - функция loadDevices:
+const loadDevices = async (searchQuery?: string) => {
+  dispatch(setLoading(true));
+  try {
+    // Прямой вызов функции из модуля
+    const apiData = await listDevices({ device_query: searchQuery });
+    
+    dispatch(setDevices(
+      apiData.length > 0 ? apiData : DEVICES_MOCK.filter(item =>
+        searchQuery ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
+      )
+    ));
+    
+  } catch {
+    dispatch(setDevices(
+      DEVICES_MOCK.filter(item =>
+        searchQuery ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
+      )
+    ));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+  // --- загрузка корзины БЕЗ thunk
+  const loadCurrentCart = async () => {
+    if (!isAuthenticated) return;
+    
+    setLoadingCart(true);
     try {
-      const apiData = await listDevices({ device_query: searchQuery });
-      dispatch(setDevices(apiData.length > 0 ? apiData : DEVICES_MOCK.filter(item =>
-        searchQuery ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
-      )));
-    } catch {
-      dispatch(setDevices(DEVICES_MOCK.filter(item =>
-        searchQuery ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
-      )));
+      const cartData = await getCurrentCart(); // Прямой вызов API функции
+      if (cartData) {
+        dispatch(setCurrentCart(cartData)); // Синхронный экшен в Redux
+      }
+    } catch (error) {
+      console.error('Failed to load cart:', error);
     } finally {
-      dispatch(setLoading(false));
+      setLoadingCart(false);
     }
   };
 
   useEffect(() => {
     loadDevices(searchTitle);
-    if (isAuthenticated) {
-      dispatch(getCurrentCart());
-    }
+    loadCurrentCart(); // Вызываем нашу функцию
   }, [isAuthenticated]);
 
   const handleSearch = async () => {
@@ -61,11 +85,16 @@ export default function DevicesPage() {
       alert('Войдите в систему, чтобы открыть корзину');
       return;
     }
-    if (!currentCart?.id) {
-      alert('Корзина пуста!');
+    
+    // Проверяем через localStorage или состояние
+    const cartId = currentCart?.id || currentCart?.current_id;
+    
+    if (!cartId) {
+      alert('Корзина пуста! Добавьте устройства в расчет.');
       return;
     }
-    navigate(`/current/${currentCart.id}`);
+    
+    navigate(`/current/${cartId}`);
   };
 
   return (
@@ -88,7 +117,7 @@ export default function DevicesPage() {
 
         <div className="products-wrapper">
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Загрузка устройств...</div>
           ) : (
             <div className="products">
               {devices.length > 0 ? <DevicesList devices={devices} /> : (
@@ -100,7 +129,11 @@ export default function DevicesPage() {
           )}
 
           <div className="wrench-after-fourth">
-            <CartButton onClick={handleCartClick} count={devices_count} />
+            <CartButton 
+              onClick={handleCartClick} 
+              count={devices_count} 
+              loading={loadingCart}
+            />
           </div>
         </div>
       </main>

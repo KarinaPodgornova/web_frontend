@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DevicesPage from "./pages/DevicesPage/DevicesPage";
 import { ROUTES } from "./Routes";
 import { HomePage } from "./pages/HomePage";
-import DevicePage from './pages/DevicePage';
+import DevicePage from './pages/DevicePage/DevicePage.tsx';
 import SignInPage from './pages/SignInPage/SignInPage.tsx';
 import SignUpPage from './pages/SignUpPage/SignUpPage';
 

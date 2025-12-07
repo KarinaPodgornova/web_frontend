@@ -8,7 +8,11 @@
     flex-direction: column; 
     height: 100%; 
     min-height: 292px; 
-   
+}
+
+.product:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(24,84,205,0.18);
 }
 
 .product-image { 
@@ -72,8 +76,21 @@
     text-decoration: none;
     margin-bottom: 10px; 
     margin-top: 15px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 14px;
 }
 
-.add-to-cart:hover{
+.add-to-cart:hover {
     background: #1342a8;
+}
+
+/* Для disabled состояния */
+.add-to-cart:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.add-to-cart:disabled:hover {
+    background-color: #cccccc;
 }

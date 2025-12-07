@@ -1,22 +1,23 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import type { AppDispatch, RootState } from '../../store';
-import { loginUser, registerUser } from '../../store/slices/userSlice';
+import type { AppDispatch } from '../../store';
+import { loginSuccess, loginFailure } from '../../store/slices/userSlice';
+import { registerUser, loginUser } from '../../modules/UserApi';
 import Header from '../../components/Header/Header';
 import './SignUpPage.css';
 
 export default function SignUpPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state: RootState) => state.user);
   
   const [form, setForm] = useState({
     login: '',
     password: '',
-     confirmPassword: ''
+    confirmPassword: ''
   });
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [validationError, setValidationError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,19 +33,41 @@ export default function SignUpPage() {
       return;
     }
 
-    if (form.password.length < 8) {
-      setValidationError('Пароль должен быть не менее 8 символов');
+    if (form.password.length < 6) {
+      setValidationError('Пароль должен быть не менее 6 символов');
       return;
     }
 
+    setLoading(true);
+    setError('');
+    setValidationError('');
+
     try {
-      await dispatch(registerUser({ 
+      // Регистрация
+      await registerUser({ 
         login: form.login, 
         password: form.password 
-      })).unwrap();
-      await dispatch(loginUser({ login: form.login, password: form.password })).unwrap();
-      navigate('/devices');
-    } catch (error) {
+      });
+      
+      // Автоматический вход после регистрации
+      const loginResult = await loginUser({ 
+        login: form.login, 
+        password: form.password 
+      });
+      
+      if (loginResult?.token) {
+        localStorage.setItem('token', loginResult.token);
+        dispatch(loginSuccess({ username: form.login }));
+        navigate('/devices');
+      } else {
+        throw new Error('Токен не получен');
+      }
+      
+    } catch (err: any) {
+      setError(err.message || 'Ошибка регистрации');
+      dispatch(loginFailure(err.message || 'Ошибка регистрации'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,7 +125,6 @@ export default function SignUpPage() {
                 disabled={loading}
               />
             </div>
-
 
             <button 
               type="submit" 

@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { api } from '../../api';
+// store/slices/userSlice.ts
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface UserState {
   username: string;
@@ -15,91 +15,73 @@ const initialState: UserState = {
   error: null,
 };
 
-export const loginUser = createAsyncThunk(
-  '/signin',
-  async (credentials: { login: string; password: string }, { rejectWithValue }) => {
-    try {
-      const response = await api.users.signinCreate(credentials);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.description || 'Ошибка авторизации');
-    }
-  }
-);
-
-export const registerUser = createAsyncThunk(
-  '/signup',
-  async (userData: { login: string; password: string }, { rejectWithValue }) => {
-    try {
-      const response = await api.users.signupCreate({
-        login: userData.login,
-        password: userData.password,
-        is_moderator: false 
-      });
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.description || 'Ошибка регистрации');
-    }
-  }
-);
-
-export const logoutUser = createAsyncThunk(
-  '/signout',
-  async (username:string, { rejectWithValue }) => {
-    try {
-      const response = await api.users.signoutCreate(username);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.description || 'Ошибка при выходе');
-    }
-  }
-);
-
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    // Синхронные экшены для авторизации
+    loginStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    
+    loginSuccess: (state, action: PayloadAction<{ username: string }>) => {
+      state.loading = false;
+      state.isAuthenticated = true;
+      state.username = action.payload.username;
+    },
+    
+    loginFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    
+    // Синхронные экшены для регистрации
+    registerStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    
+    registerSuccess: (state) => {
+      state.loading = false;
+      state.isAuthenticated = true;
+    },
+    
+    registerFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    
+    // Синхронный экшен для выхода
+    logout: (state) => {
+      state.isAuthenticated = false;
+      state.username = '';
+      localStorage.removeItem('token');
+    },
+    
+    // Очистка ошибки
     clearError: (state) => {
       state.error = null;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.username = action.payload.login || action.meta.arg.login;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.isAuthenticated = false;
-        state.username = '';
-        localStorage.removeItem('token');
-      })
-      .addCase(logoutUser.rejected, (state, action) => {
-        state.error = action.payload as string;
-      });
+    
+    // Восстановление состояния из localStorage/token
+    restoreAuth: (state, action: PayloadAction<{ username: string }>) => {
+      state.isAuthenticated = true;
+      state.username = action.payload.username;
+    },
   },
 });
 
-export const { clearError } = userSlice.actions;
+export const { 
+  loginStart, 
+  loginSuccess, 
+  loginFailure,
+  registerStart, 
+  registerSuccess, 
+  registerFailure,
+  logout,
+  clearError,
+  restoreAuth
+} = userSlice.actions;
+
 export default userSlice.reducer;
