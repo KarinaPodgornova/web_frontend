@@ -1,5 +1,7 @@
-/* Стили ТОЛЬКО для страницы регистрации - БЕЗ ХЕДЕРА */
-.reg-page {
+/* src/pages/SignInPage/SignInPage.css */
+
+/* Стили ТОЛЬКО для страницы входа - БЕЗ ХЕДЕРА */
+.signin-page {
     min-height: 100vh;
     background: linear-gradient(
         135deg,
@@ -12,10 +14,9 @@
     color: white;
     display: flex;
     flex-direction: column;
-
 }
 
-.reg-page .reg-container {
+.signin-page .signin-container {
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
@@ -24,9 +25,10 @@
     justify-content: center;
     align-items: center;
     flex-grow: 1;
+    padding: 20px;
 }
 
-.reg-page .reg-form-wrapper {
+.signin-page .signin-form-wrapper {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -34,7 +36,7 @@
     width: 100%;
 }
 
-.reg-page .reg-form-wrapper h1 {
+.signin-page .signin-form-wrapper h1 {
     color: white;
     font-size: 32px;
     font-weight: 700;
@@ -45,7 +47,7 @@
 }
 
 /* Ошибка */
-.reg-page .error-message {
+.signin-page .error-message {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #ff6b6b;
@@ -58,14 +60,20 @@
 }
 
 /* Форма */
-.reg-page .reg-form {
+.signin-page .signin-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
     width: 100%;
 }
 
-.reg-page .form-group label {
+.signin-page .form-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.signin-page .form-group label {
     color: white;
     font-weight: 600;
     margin-bottom: 8px;
@@ -73,8 +81,8 @@
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Поля */
-.reg-page .form-group input {
+/* Поля ввода */
+.signin-page .form-group input {
     padding: 16px 20px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -87,11 +95,11 @@
     box-sizing: border-box;
 }
 
-.reg-page .form-group input::placeholder {
+.signin-page .form-group input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.reg-page .form-group input:focus {
+.signin-page .form-group input:focus {
     outline: none;
     border-color: rgba(255, 255, 255, 0.5);
     background: rgba(255, 255, 255, 0.15);
@@ -99,7 +107,7 @@
 }
 
 /* Кнопка */
-.reg-page .reg-button {
+.signin-page .signin-button {
     background: linear-gradient(135deg, #ffffff 0%, #e8f4ff 100%);
     color: #1b58d6;
     border: none;
@@ -116,29 +124,35 @@
     width: 100%;
 }
 
-.reg-page .reg-button:hover:not(:disabled) {
+.signin-page .signin-button:hover:not(:disabled) {
     background: linear-gradient(135deg, #e8f4ff 0%, #ffffff 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(0,0,0,0.3);
 }
 
-.reg-page .reg-button:active:not(:disabled) {
+.signin-page .signin-button:active:not(:disabled) {
     transform: translateY(0);
 }
 
-.reg-page .reg-links {
+.signin-page .signin-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Ссылки (если нужны) */
+.signin-page .signin-links {
     text-align: center;
     margin-top: 30px;
 }
 
-.reg-page .reg-links a {
+.signin-page .signin-links a {
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
 }
 
-.reg-page .reg-links a:hover {
+.signin-page .signin-links a:hover {
     color: white;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }

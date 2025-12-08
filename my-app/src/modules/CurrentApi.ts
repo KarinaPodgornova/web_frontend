@@ -238,4 +238,4 @@ export async function updateCurrentCalculation(id: number, data: { voltage_bord?
       console.error(`Failed to delete current calculation ${id}:`, err);
       return false;
     }
-  }
+  } 

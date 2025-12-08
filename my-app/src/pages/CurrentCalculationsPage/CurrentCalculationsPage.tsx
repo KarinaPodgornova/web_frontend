@@ -5,7 +5,7 @@ import Header from '../../components/Header/Header';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
 import { useAppSelector } from '../../store/hooks';
-import { listCurrentCalculations, getCurrentCart } from '../../modules/CurrentApi';
+import { listCurrentCalculations, getCurrentCart, getCurrentCalculation } from '../../modules/CurrentApi';
 import './CurrentCalculationsPage.css';
 
 interface CalculationItem {
@@ -20,13 +20,15 @@ interface CalculationItem {
   voltage_bord?: number;
   devices_count?: number;
   amperage?: number;
+  total_amperage?: number;
 }
 
 export default function CurrentCalculationsPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAppSelector(state => state.user);
 
-  const [calculations, setCalculations] = useState<CalculationItem[]>([]);
+  const [allCalculations, setAllCalculations] = useState<CalculationItem[]>([]);
+  const [displayedCalculations, setDisplayedCalculations] = useState<CalculationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -41,24 +43,45 @@ export default function CurrentCalculationsPage() {
       navigate('/signin');
       return;
     }
-    loadCalculations();
+    loadAllCalculations();
   }, [isAuthenticated, navigate]);
 
-  const loadCalculations = async () => {
+  // Функция для расчета силы тока из currentDevices
+  const calculateAmperageFromCurrentDevices = (currentDevices: any[]) => {
+    if (!currentDevices || !Array.isArray(currentDevices)) return 0;
+    
+    return currentDevices.reduce((sum: number, currentDevice: any) => {
+      const deviceAmperage = currentDevice.amperage || 0;
+      return sum + parseFloat(deviceAmperage);
+    }, 0);
+  };
+
+  // Функция для загрузки деталей заявки и расчета силы тока
+  const loadCurrentWithAmperage = async (currentId: number): Promise<number> => {
+    try {
+      const data = await getCurrentCalculation(currentId);
+      
+      // Рассчитываем силу тока из currentDevices
+      if (data && data.currentDevices && Array.isArray(data.currentDevices)) {
+        return calculateAmperageFromCurrentDevices(data.currentDevices);
+      }
+      
+      return 0;
+    } catch (err) {
+      console.error(`Ошибка загрузки заявки #${currentId}:`, err);
+      return 0;
+    }
+  };
+
+  const loadAllCalculations = async () => {
     setLoading(true);
     setError('');
     
     try {
-      // Подготавливаем фильтры
-      const filters: any = {};
-      if (fromDate) filters['from-date'] = fromDate;
-      if (toDate) filters['to-date'] = toDate;
-      if (statusFilter !== 'all') filters.status = statusFilter;
+      // Загружаем все заявки без фильтров
+      const allCalculationsData = await listCurrentCalculations();
       
-      // Загружаем все заявки
-      const allCalculations = await listCurrentCalculations(filters);
-      
-      // Загружаем корзину (черновик)
+      // Добавляем черновик
       let draftCalculation = null;
       try {
         const cartData = await getCurrentCart();
@@ -69,16 +92,35 @@ export default function CurrentCalculationsPage() {
             status: 'draft'
           };
         }
-      } catch (cartError) {
+      } catch (cartError: any) {
         console.log('Черновика нет');
       }
       
-      // Объединяем черновик с остальными заявками
-      const combinedCalculations = draftCalculation 
-        ? [draftCalculation, ...allCalculations]
-        : allCalculations;
+      const allCalculationsList = draftCalculation 
+        ? [draftCalculation, ...allCalculationsData]
+        : allCalculationsData;
       
-      setCalculations(combinedCalculations);
+      // Для завершенных заявок загружаем силу тока
+      const calculationsWithAmperage = await Promise.all(
+        allCalculationsList.map(async (item) => {
+          if ((item.status === 'completed' || item.status === 'finished') && (item.current_id || item.id)) {
+            try {
+              const currentId = item.current_id || item.id!;
+              const totalAmperage = await loadCurrentWithAmperage(currentId);
+              return {
+                ...item,
+                total_amperage: totalAmperage
+              };
+            } catch (err) {
+              console.log(`Не удалось загрузить силу тока для заявки ${item.current_id}:`, err);
+            }
+          }
+          return item;
+        })
+      );
+      
+      setAllCalculations(calculationsWithAmperage);
+      setDisplayedCalculations(calculationsWithAmperage);
       
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки расчётов');
@@ -87,55 +129,76 @@ export default function CurrentCalculationsPage() {
     }
   };
 
+  const applyFilters = () => {
+    let filtered = [...allCalculations];
+    
+    // Фильтр по статусу
+    if (statusFilter && statusFilter !== 'all') {
+      filtered = filtered.filter(item => item.status === statusFilter);
+    }
+    
+    // Фильтр по дате создания
+    if (fromDate) {
+      const from = new Date(fromDate);
+      filtered = filtered.filter(item => {
+        if (!item.created_at) return false;
+        const itemDate = new Date(item.created_at);
+        return itemDate >= from;
+      });
+    }
+    
+    if (toDate) {
+      const to = new Date(toDate);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(item => {
+        if (!item.created_at) return false;
+        const itemDate = new Date(item.created_at);
+        return itemDate <= to;
+      });
+    }
+    
+    setDisplayedCalculations(filtered);
+  };
+
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loadCalculations();
+    applyFilters();
   };
 
   const handleResetFilters = () => {
     setFromDate('');
     setToDate('');
     setStatusFilter('all');
-    // Перезагружаем без фильтров
-    loadCalculations();
+    setDisplayedCalculations(allCalculations);
   };
 
   const getStatusText = (status?: string) => {
-    const statusMap: Record<string, string> = {
-      'draft': 'Черновик',
-      'formed': 'Сформирована',
-      'completed': 'Завершена',
-      'finished': 'Завершена',
-      'rejected': 'Отклонена',
-      'declined': 'Отклонена',
+    const map: Record<string, string> = {
+      draft: 'Черновик',
+      formed: 'Сформирована',
+      completed: 'Завершена',
+      rejected: 'Отклонена',
+      finished: 'Завершена',
+      declined: 'Отклонена',
     };
-    return status ? statusMap[status] || status : '—';
+    return status ? (map[status] || status) : '—';
   };
   
   const getStatusClass = (status?: string) => {
-    const statusMap: Record<string, string> = {
-      'draft': 'status-draft',
-      'formed': 'status-formed',
-      'completed': 'status-completed',
-      'finished': 'status-completed',
-      'rejected': 'status-rejected',
-      'declined': 'status-rejected',
+    const map: Record<string, string> = {
+      draft: 'status-draft',
+      formed: 'status-formed',
+      completed: 'status-completed',
+      rejected: 'status-rejected',
+      finished: 'status-completed',
+      declined: 'status-rejected',
     };
-    return status ? statusMap[status] || '' : '';
+    return status ? (map[status] || '') : '';
   };
 
   const handleOpenCalculation = (id?: number) => {
     if (id) {
       navigate(`/current/${id}`);
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '—';
-    try {
-      return new Date(dateString).toLocaleDateString('ru-RU');
-    } catch {
-      return '—';
     }
   };
 
@@ -147,6 +210,26 @@ export default function CurrentCalculationsPage() {
       { value: 'completed', label: 'Завершена' },
       { value: 'rejected', label: 'Отклонена' }
     ];
+  };
+
+  // Функция для получения результата расчёта (необходимая сила тока)
+  const getCalculationResult = (item: CalculationItem) => {
+    if (item.status === 'completed' || item.status === 'finished') {
+      if (item.total_amperage !== undefined && item.total_amperage !== null) {
+        return `${parseFloat(item.total_amperage.toString()).toFixed(2)} А`;
+      }
+    }
+    return '—';
+  };
+
+  // Функция для форматирования даты
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
+    try {
+      return new Date(dateString).toLocaleDateString('ru-RU');
+    } catch {
+      return '—';
+    }
   };
 
   if (loading) {
@@ -176,7 +259,7 @@ export default function CurrentCalculationsPage() {
 
         {error && <div className="error-message">{error}</div>}
 
-        {/* Фильтры */}
+        {/* Секция фильтров */}
         {showFilters && (
           <div className="filters-section">
             <form onSubmit={handleFilterSubmit} className="filters-form">
@@ -237,7 +320,7 @@ export default function CurrentCalculationsPage() {
         )}
 
         <div className="currents-container">
-          {calculations.length > 0 ? (
+          {displayedCalculations.length > 0 ? (
             <div className="currents-table-wrapper">
               <div className="currents-table-header">
                 <span>ID</span>
@@ -246,12 +329,12 @@ export default function CurrentCalculationsPage() {
                 <span>Дата создания</span>
                 <span>Дата формирования</span>
                 <span>Дата завершения</span>
-                <span>Устройств</span>
-                <span>Напряжение</span>
+                <span>Модератор</span>
+                <span>Необходимая сила тока</span>
               </div>
 
               <div className="currents-table-body">
-                {calculations.map((item, index) => (
+                {displayedCalculations.map((item, index) => (
                   <div
                     key={item.current_id || item.id || index}
                     className={`currents-table-row ${item.status === 'draft' ? 'draft-row' : ''}`}
@@ -272,26 +355,18 @@ export default function CurrentCalculationsPage() {
 
                     <span>{formatDate(item.finish_date)}</span>
 
-                    <span>{item.devices_count || 0}</span>
+                    <span>{item.moderator_login || '—'}</span>
 
-                    <span>{item.voltage_bord ? `${item.voltage_bord} В` : '—'}</span>
+                    <span className="result-column">
+                      {getCalculationResult(item)}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
             <div className="empty-state">
-              {error ? (
-                <>
-                  <p>{error}</p>
-                  <button 
-                    className="btn-secondary" 
-                    onClick={handleResetFilters}
-                  >
-                    Попробовать снова
-                  </button>
-                </>
-              ) : (
+              {allCalculations.length === 0 ? (
                 <>
                   <p>Расчёты не найдены</p>
                   <button 
@@ -299,6 +374,16 @@ export default function CurrentCalculationsPage() {
                     onClick={() => navigate('/devices')}
                   >
                     Создать новый расчёт
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>Нет расчётов, соответствующих фильтрам</p>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={handleResetFilters}
+                  >
+                    Показать все расчёты
                   </button>
                 </>
               )}

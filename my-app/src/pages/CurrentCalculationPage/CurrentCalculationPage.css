@@ -6,9 +6,9 @@
 }
 
 .current-calculation-page main {
-    max-width: 1300px; /* Увеличил максимальную ширину */
+    max-width: 1300px;
     margin: 0 auto;
-    padding: 30px 40px; /* Увеличил паддинги */
+    padding: 30px 40px;
 }
 
 .current-header {
@@ -30,30 +30,29 @@
     margin: 0;
 }
 
-/* Заголовок таблицы - РАСШИРЕННАЯ СЕТКА */
+/* Заголовок таблицы */
 .current-devices-table-header {
     display: grid;
-    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px; /* Широкая сетка */
+    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px;
     align-items: center;
-    padding: 20px 25px; /* Больше паддинга */
+    padding: 20px 25px;
     background: #f8f9fa;
     border-radius: 8px 8px 0 0;
     border: 1px solid #e0e0e0;
     border-bottom: none;
     font-weight: 600;
     color: #333;
-    gap: 25px; /* Больше отступов между колонками */
+    gap: 25px;
     font-size: 17px;
 }
 
-/* Пустая ячейка для картинки в заголовке */
 .image-header {
     text-align: center;
 }
 
 .device-title-header {
     text-align: left;
-    padding-left: 15px; /* Отступ для названия */
+    padding-left: 15px;
 }
 
 .device-power-header {
@@ -86,15 +85,15 @@
     overflow: hidden;
 }
 
-/* Строка устройства - РАСШИРЕННАЯ СЕТКА */
+/* Строка устройства */
 .current-device-item {
     display: grid;
-    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px; /* ТА ЖЕ ШИРОКАЯ СЕТКА */
+    grid-template-columns: 80px 0.8fr 190px 120px 200px 130px;
     align-items: center;
-    padding: 20px 25px; /* Больше паддинга */
+    padding: 20px 25px;
     border-bottom: 1px solid #f0f0f0;
-    gap: 25px; /* Больше отступов между колонками */
-    min-height: 80px; /* Выше строки */
+    gap: 25px;
+    min-height: 80px;
 }
 
 .current-device-item:last-child {
@@ -109,7 +108,7 @@
 }
 
 .device-image {
-    width: 70px; /* Немного больше */
+    width: 70px;
     height: 70px;
     object-fit: cover;
     border-radius: 6px;
@@ -120,15 +119,13 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    padding-left: 15px; /* Отступ слева для названия */
+    padding-left: 15px;
 }
 
-/* УБИРАЕМ ПОДЧЕРКИВАНИЕ У НАЗВАНИЯ УСТРОЙСТВА */
 .device-name {
     font-weight: 600;
     color: #0066cc;
     cursor: pointer;
-    /* Убрано: text-decoration: underline; */
     transition: color 0.3s ease;
     font-size: 17px;
     white-space: nowrap;
@@ -140,7 +137,7 @@
 
 .device-name:hover {
     color: #1854CD;
-    text-decoration: underline; /* Только при наведении */
+    text-decoration: underline;
 }
 
 .device-power {
@@ -150,7 +147,7 @@
     font-weight: 500;
 }
 
-/* Контролы количества - больше места */
+/* Контролы количества */
 .amount-controls {
     display: flex;
     flex-direction: column;
@@ -170,12 +167,12 @@
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 10px; /* Больше отступов между кнопками */
+    gap: 10px;
     justify-content: center;
 }
 
 .quantity-btn {
-    width: 36px; /* Больше кнопки */
+    width: 36px;
     height: 36px;
     background: #f6f6f6;
     color: black;
@@ -198,7 +195,7 @@
 }
 
 .quantity-input {
-    width: 60px; /* Шире поле ввода */
+    width: 60px;
     height: 36px;
     text-align: center;
     border: 1px solid #E9E9E9;
@@ -230,12 +227,11 @@
 
 .device-amount-readonly {
     font-size: 18px;
-    
     text-align: center;
     color: #333;
 }
 
-/* Сила тока устройства - больше места */
+/* Сила тока устройства */
 .device-amperage {
     text-align: center;
     font-size: 18px;
@@ -253,17 +249,17 @@
     font-size: 18px;
 }
 
-/* Кнопки действий устройства - больше места */
+/* Кнопки действий устройства */
 .device-actions-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px; /* Больше отступ между кнопками */
+    gap: 12px;
     justify-content: center;
     height: 100%;
 }
 
 .btn-save-amount {
-    padding: 10px 20px; /* Больше кнопка */
+    padding: 10px 20px;
     background-color: #1854CD;
     color: white;
     border: none;
@@ -271,7 +267,7 @@
     cursor: pointer;
     font-size: 15px;
     font-weight: 600;
-    min-width: 100px; /* Шире кнопка */
+    min-width: 100px;
     height: 40px;
     display: flex;
     align-items: center;
@@ -301,7 +297,7 @@
     font-size: 16px;
     font-weight: 600;
     transition: all 0.3s ease;
-    width: 40px; /* Больше кнопка */
+    width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
@@ -449,16 +445,19 @@
     color: #c62828;
 }
 
-/* Секция напряжения и силы тока в одной строке */
+/* Секция напряжения и силы тока */
+.voltage-amperage-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
+}
+
 .voltage-amperage-single-line {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 20px 0;
-    padding: 20px 25px; /* Больше паддинга */
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
     gap: 40px;
 }
 
@@ -474,14 +473,14 @@
     font-weight: bold;
     color: #495057;
     font-size: 17px;
-    min-width: 220px; /* Шире метки */
+    min-width: 220px;
     margin-right: 20px;
 }
 
 .voltage-input-group {
     display: flex;
     align-items: center;
-    gap: 20px; /* Больше отступов */
+    gap: 20px;
     flex: 1;
 }
 
@@ -491,8 +490,8 @@
 }
 
 .voltage-input {
-    width: 140px; /* Шире поле ввода */
-    padding: 10px 40px 10px 15px; /* Больше паддинга */
+    width: 140px;
+    padding: 10px 40px 10px 15px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 17px;
@@ -516,11 +515,11 @@
 .voltage-actions {
     display: flex;
     align-items: center;
-    gap: 15px; /* Больше отступов */
+    gap: 15px;
 }
 
 .btn-save-voltage {
-    padding: 10px 20px; /* Больше кнопка */
+    padding: 10px 20px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -541,7 +540,7 @@
 
 .voltage-hint {
     color: #6c757d;
-    font-size: 14px; /* Чуть больше */
+    font-size: 14px;
     font-style: italic;
 }
 
@@ -550,15 +549,15 @@
 }
 
 .amperage-value {
-    font-size: 20px; /* Больше текст */
+    font-size: 20px;
     color: #1854CD;
     font-weight: bold;
-    padding: 10px 20px; /* Больше паддинг */
+    padding: 10px 20px;
     background-color: white;
     border-radius: 4px;
     border: 1px solid #ced4da;
     display: inline-block;
-    min-width: 140px; /* Шире блок */
+    min-width: 140px;
     text-align: center;
 }
 

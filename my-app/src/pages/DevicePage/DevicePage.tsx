@@ -1,19 +1,17 @@
-// pages/DevicePage/DevicePage.tsx
+// src/pages/DevicePage/DevicePage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTES, ROUTE_LABELS } from '../../Routes';
 import { getDevice } from '../../modules/DevicesApi';
 import type { Device } from '../../modules/DevicesTypes';
-import { addDeviceToCurrent } from '../../modules/CurrentDevicesApi'; // Из модуля!
-import { getCurrentCart } from '../../modules/CurrentApi'; // Из модуля, НЕ из слайса!
+import { addDeviceToCurrent } from '../../modules/CurrentDevicesApi';
+import { getCurrentCart } from '../../modules/CurrentApi';
 import { Spinner } from 'react-bootstrap';
 import Header from '../../components/Header/Header';
 import { DEVICES_MOCK } from '../../modules/mock';
 import './DevicePage.css';
 import defaultDeviceImage from '../../assets/DefaultImage.jpg';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { setCurrentCart } from '../../store/slices/currentCalculationSlice'; // ТОЛЬКО синхронный экшен
 
 export default function DevicePage() {
   const [device, setDevice] = useState<Device | null>(null);
@@ -22,22 +20,24 @@ export default function DevicePage() {
   const [imageError, setImageError] = useState(false);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [currentCart, setCurrentCart] = useState<any>(null);
   
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
-  const { isAuthenticated } = useAppSelector(state => state.user);
-  const { currentCart } = useAppSelector(state => state.currentCalculation);
+  // Проверка авторизации через localStorage
+  const isAuthenticated = () => {
+    return !!localStorage.getItem('token');
+  };
 
-  // Функция загрузки корзины БЕЗ thunk
+  // Функция загрузки корзины через fetch
   const loadCurrentCart = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated()) return;
     
     try {
       const cartData = await getCurrentCart(); // Прямой вызов из модуля
       if (cartData) {
-        dispatch(setCurrentCart(cartData)); // Синхронный экшен
+        setCurrentCart(cartData);
       }
     } catch (error) {
       console.error('Failed to load cart:', error);
@@ -86,10 +86,10 @@ export default function DevicePage() {
     fetchDevice();
     
     // Загружаем корзину при загрузке страницы
-    if (isAuthenticated) {
+    if (isAuthenticated()) {
       loadCurrentCart();
     }
-  }, [id, navigate, isAuthenticated]);
+  }, [id, navigate]);
 
   const getImageUrl = (filename: string) => {
     if (!filename || imageError) return defaultDeviceImage;
@@ -102,7 +102,7 @@ export default function DevicePage() {
 
   // Функция добавления устройства в расчет
   const handleAddToCurrent = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated()) {
       showNotification('error', 'Войдите в систему, чтобы добавить устройство в расчет');
       navigate('/signin');
       return;
@@ -237,7 +237,7 @@ export default function DevicePage() {
             
             <div className="device-availability">
               <span className={`availability-indicator ${device.in_stock ? 'in-stock' : 'out-of-stock'}`}>
-                {device.in_stock ? '✓ В наличии' : '✗ Нет в наличии'}
+                {device.in_stock ? 'В наличии' : 'Нет в наличии'}
               </span>
             </div>
             
@@ -281,21 +281,9 @@ export default function DevicePage() {
             <div className="device-divider"></div>
             
             <div className="device-actions">
-              <button 
-                className="btn-add-to-current"
-                onClick={handleAddToCurrent}
-                disabled={addingToCart || !device.in_stock}
-              >
-                {addingToCart ? 'Добавление...' : 'Добавить в расчет'}
-              </button>
+             
               
-              <button 
-                className="btn-go-to-current"
-                onClick={handleGoToCurrent}
-                disabled={!currentCart}
-              >
-                Перейти к расчету
-              </button>
+            
             </div>
           </div>
         </div>

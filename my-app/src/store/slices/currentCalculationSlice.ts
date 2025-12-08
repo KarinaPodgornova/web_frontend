@@ -1,65 +1,37 @@
-// store/slices/currentCalculationSlice.ts - ОКОНЧАТЕЛЬНЫЙ ВАРИАНТ
+// store/slices/currentCalculationSlice.ts
 import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit'; 
 
 interface CurrentCalculationState {
   currentCart: any | null;
   devices_count: number;
-  loading: boolean;
-  error: string | null;
 }
 
 const initialState: CurrentCalculationState = {
   currentCart: null,
   devices_count: 0,
-  loading: false,
-  error: null,
 };
 
 const currentCalculationSlice = createSlice({
   name: 'currentCalculation',
   initialState,
   reducers: {
-    // ТОЛЬКО синхронные экшены
-    setCurrentCart: (state, action) => {
+    // ТОЛЬКО СИНХРОННЫЕ ЭКШЕНЫ!
+    setCurrentCart: (state, action: PayloadAction<any>) => {
       state.currentCart = action.payload;
       state.devices_count = action.payload.devices_count || 0;
-      state.loading = false;
-      state.error = null;
     },
     
     clearCurrentCart: (state) => {
       state.currentCart = null;
       state.devices_count = 0;
-      state.error = null;
     },
     
-    updateDevicesCount: (state, action) => {
+    updateDevicesCount: (state, action: PayloadAction<number>) => {
       state.devices_count = action.payload;
-    },
-    
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-    
-    setError: (state, action) => {
-      state.error = action.payload;
-      state.loading = false;
-    },
-    
-    clearError: (state) => {
-      state.error = null;
     },
   },
 });
 
-// Экспортируем ТОЛЬКО синхронные экшены
-export const { 
-  setCurrentCart, 
-  clearCurrentCart, 
-  updateDevicesCount,
-  setLoading,
-  setError,
-  clearError
-} = currentCalculationSlice.actions;
-
+export const { setCurrentCart, clearCurrentCart, updateDevicesCount } = currentCalculationSlice.actions;
 export default currentCalculationSlice.reducer;
