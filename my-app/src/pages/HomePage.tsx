@@ -49,12 +49,22 @@ export const HomePage: FC = () => {
             background: currentSlideData.type === 'gradient' ? currentSlideData.value : 'none',
           }}
         >
-          <div className="banner-content">
-          <h1 style={{ fontSize: '3.7rem' }}>Необходимая сила тока</h1>
-            <p style={{ fontSize: '1.9rem' }}>
-              Добро пожаловать в каталог устройств для BMW! Здесь вы сможете определить необходимую силу тока для устройств автомобиля.
-            </p>
-          </div>
+        <div className="banner-content">
+  <h1 style={{ fontSize: '3.7rem' }}>Определение необходимой силы тока</h1>
+  <p style={{ fontSize: '1.9rem', marginBottom: '20px' }}>
+    Добро пожаловать! 
+  </p>
+  <p style={{ textAlign: 'center', marginBottom: '10px' , fontSize: '1.5rem', lineHeight:'1.2'}}>
+      Как использовать
+    </p>
+  <p style={{ marginLeft: '500px', fontSize: '1.5rem', lineHeight: '1.2', textAlign: 'left' }}>
+    <br/>
+   1. Перейдите в раздел "Устройства"<br />
+   2. Выберите интересующие Вас устройства<br />
+    3. Изучите детальную информацию о них<br />
+   4. Авторизируйтесь и создайте расчёт необходимой силы тока для них
+  </p>
+</div>
         </div>
         
          {/* Незаметные стрелки навигации */}
