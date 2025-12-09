@@ -5,6 +5,7 @@ import mkcert from 'vite-plugin-mkcert'
 import fs from 'fs';
 import path from 'path';
 
+
 export default defineConfig({
   plugins: [
     react(),

@@ -19,7 +19,7 @@ export const loginUser = createAsyncThunk(
   '/signin',
   async (credentials: { login: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await api.users.signinCreate(credentials);
+      const response = await api.signin.signinCreate(credentials);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.description || 'Ошибка авторизации');
@@ -31,7 +31,7 @@ export const registerUser = createAsyncThunk(
   '/signup',
   async (userData: { login: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await api.users.signupCreate({
+      const response = await api.signup.signupCreate({
         login: userData.login,
         password: userData.password,
         is_moderator: false 

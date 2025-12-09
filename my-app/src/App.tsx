@@ -5,6 +5,7 @@ import { HomePage } from "./pages/HomePage";
 import DevicePage from './pages/DevicePage';
 import SignInPage from './pages/SignInPage/SignInPage.tsx';
 import SignUpPage from './pages/SignUpPage/SignUpPage';
+import ModeratorPage from "./pages/ModeratorPage/ModeratorPage";
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -26,6 +27,7 @@ function App() {
         <Route path={ROUTES.DEVICE} element={<DevicePage />} />
         <Route path={ROUTES.CURRENTS} element={<CurrentCalculationsPage />} />
         <Route path={ROUTES.CURRENT} element={<CurrentCalculationPage />} />
+        <Route path={ROUTES.Moderator} element={<ModeratorPage />} />
         
         <Route path={ROUTES.SignIn} element={<SignInPage />} /> 
         <Route path={ROUTES.SignUp} element={<SignUpPage />} />

@@ -8,7 +8,8 @@ export const ROUTES = {
   CURRENT: "/current/:id",  
   SignIn: "/signin",
   SignUp: "/signup",
-  Profile: "/users/:login/info"
+  Profile: "/users/:login/info",
+  Moderator: "/moderator"
 }
 
 export type RouteKeyType = keyof typeof ROUTES;
@@ -21,5 +22,6 @@ export const ROUTE_LABELS: {[key in RouteKeyType]: string} = {
   CURRENTS: "Мои заявки",
   SignIn: "Вход",
   SignUp: "Регистрация",
-  Profile: "Профиль"
+  Profile: "Профиль",
+  Moderator: "Модератор" 
 };

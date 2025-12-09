@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
@@ -9,6 +9,7 @@ import './CurrentCalculationsPage.css';
 
 export default function CurrentCalculationsPage() {
   const navigate = useNavigate();
+  const location = useLocation()
   const { isAuthenticated } = useAppSelector(state => state.user);
 
   const [allCalculations, setAllCalculations] = useState<any[]>([]);
@@ -28,7 +29,7 @@ export default function CurrentCalculationsPage() {
       return;
     }
     loadAllCalculations();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location.key]);
 
   // Функция для расчета силы тока из currentDevices
   const calculateAmperageFromCurrentDevices = (currentDevices: any[]) => {
