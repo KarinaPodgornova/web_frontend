@@ -5,25 +5,27 @@ import { BreadCrumbs } from '../../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../../Routes';
 import { useAppSelector } from '../../store/hooks';
 import { api } from '../../api';
-//import './ModeratorPage.css';
+import './ModeratorPage.css';
 
 interface CurrentCalculation {
   current_id: number;
   creator_login: string;
   status: string;
   created_at: string;
-  total_amperage?: number;
   form_date?: string;
   finish_date?: string;
   moderator_login?: string;
   voltage_bord?: number;
+  // Добавим локальное поле для расчета
+  total_amperage?: number;
 }
 
 export default function ModeratorPage() {
   const navigate = useNavigate();
   
   const { isAuthenticated, username } = useAppSelector(state => state.user);
-  const [currentCalculations, setCurrentCalculations] = useState<CurrentCalculation[]>([]);
+  const [allCalculations, setAllCalculations] = useState<CurrentCalculation[]>([]);
+  const [displayedCalculations, setDisplayedCalculations] = useState<CurrentCalculation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -31,6 +33,7 @@ export default function ModeratorPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [creatorFilter, setCreatorFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const [pollingCount, setPollingCount] = useState(0);
 
@@ -44,14 +47,44 @@ export default function ModeratorPage() {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    loadCurrentCalculations();
+    if (!isAuthenticated) return;
+    
+    loadAllCalculations();
     
     const interval = setInterval(() => {
       setPollingCount(prev => prev + 1);
-    }, 5000);
+    }, 10000);
     
     return () => clearInterval(interval);
-  }, [pollingCount, statusFilter, dateFrom, dateTo, creatorFilter]);
+  }, [isAuthenticated, pollingCount, statusFilter, dateFrom, dateTo, creatorFilter]);
+
+  // Функция для расчета силы тока из currentDevices
+  const calculateAmperageFromCurrentDevices = (currentDevices: any[]) => {
+    if (!currentDevices || !Array.isArray(currentDevices)) return 0;
+    
+    return currentDevices.reduce((sum: number, currentDevice: any) => {
+      const deviceAmperage = currentDevice.amperage || 0;
+      return sum + parseFloat(deviceAmperage);
+    }, 0);
+  };
+
+  // Функция для загрузки деталей заявки и расчета силы тока
+  const loadCurrentWithAmperage = async (currentId: number) => {
+    try {
+      const response = await api.currentCalculations.currentCalculationsDetail(currentId);
+      const data = response.data;
+      
+      // Рассчитываем силу тока из currentDevices
+      if (data.currentDevices && Array.isArray(data.currentDevices)) {
+        return calculateAmperageFromCurrentDevices(data.currentDevices);
+      }
+      
+      return 0;
+    } catch (err) {
+      console.error(`Ошибка загрузки заявки #${currentId}:`, err);
+      return 0;
+    }
+  };
 
   const checkModeratorRights = async () => {
     try {
@@ -64,32 +97,95 @@ export default function ModeratorPage() {
     }
   };
 
-  const loadCurrentCalculations = async () => {
+  const loadAllCalculations = async () => {
     setLoading(true);
     setError('');
     
     try {
-      const params: any = {};
-      if (statusFilter !== 'all') params.status = statusFilter;
-      if (dateFrom) params['from-date'] = dateFrom;
-      if (dateTo) params['to-date'] = dateTo;
+      // Загружаем все заявки без фильтров
+      const response = await api.currentCalculations.currentCalculationsList();
+      let calculations = [...response.data];
       
-      const response = await api.currentCalculations.currentCalculationsList(params);
+      // Для завершенных заявок загружаем детали и рассчитываем силу тока
+      const calculationsWithAmperage = await Promise.all(
+        calculations.map(async (item) => {
+          if (item.status === 'completed' || item.status === 'finished') {
+            try {
+              const currentId = item.current_id;
+              if (currentId) {
+                const totalAmperage = await loadCurrentWithAmperage(currentId);
+                return {
+                  ...item,
+                  total_amperage: totalAmperage
+                };
+              }
+            } catch (err) {
+              console.log(`Не удалось загрузить силу тока для заявки ${item.current_id}:`, err);
+            }
+          }
+          return item;
+        })
+      );
       
-      let filteredCalculations = response.data;
-
-      if (creatorFilter.trim()) {
-        filteredCalculations = filteredCalculations.filter((current: CurrentCalculation) =>
-          current.creator_login.toLowerCase().includes(creatorFilter.toLowerCase())
-        );
-      }
+      setAllCalculations(calculationsWithAmperage);
+      setDisplayedCalculations(calculationsWithAmperage);
       
-      setCurrentCalculations(filteredCalculations);
     } catch (error: any) {
       setError(error.response?.data?.description || 'Ошибка загрузки заявок на расчёт');
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...allCalculations];
+    
+    // Фильтр по статусу
+    if (statusFilter && statusFilter !== 'all') {
+      filtered = filtered.filter(item => item.status === statusFilter);
+    }
+    
+    // Фильтр по дате создания
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      filtered = filtered.filter(item => {
+        if (!item.created_at) return false;
+        const itemDate = new Date(item.created_at);
+        return itemDate >= from;
+      });
+    }
+    
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(item => {
+        if (!item.created_at) return false;
+        const itemDate = new Date(item.created_at);
+        return itemDate <= to;
+      });
+    }
+    
+    // Фильтр по создателю
+    if (creatorFilter.trim()) {
+      filtered = filtered.filter(item =>
+        item.creator_login.toLowerCase().includes(creatorFilter.toLowerCase())
+      );
+    }
+    
+    setDisplayedCalculations(filtered);
+  };
+
+  const handleFilterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    applyFilters();
+  };
+
+  const handleResetFilters = () => {
+    setStatusFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setCreatorFilter('');
+    setDisplayedCalculations(allCalculations);
   };
 
   const startAmperageCalculation = async (currentId: number) => {
@@ -121,7 +217,7 @@ export default function ModeratorPage() {
         };
 
         // Вызов асинхронного сервиса для расчёта
-        const asyncServiceResponse = await fetch('http://localhost:8000/api/v1/calculate-entire-current/', {
+        const asyncServiceResponse = await fetch('http://localhost:8000/api/v1/calculate-current/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -152,7 +248,7 @@ export default function ModeratorPage() {
         alert(`Статус заявки изменен на "${getStatusText(newStatus)}"`);
       }
       
-      loadCurrentCalculations();
+      loadAllCalculations();
     } catch (error: any) {
       setError(error.response?.data?.description || 'Ошибка обновления статуса заявки');
     }
@@ -198,9 +294,34 @@ export default function ModeratorPage() {
     e.stopPropagation();
   };
 
-  const filteredCalculations = statusFilter === 'all' 
-    ? currentCalculations 
-    : currentCalculations.filter(current => current.status === statusFilter);
+  const getStatusOptions = () => {
+    return [
+      { value: 'all', label: 'Все статусы' },
+      { value: 'formed', label: 'Сформированы' },
+      { value: 'completed', label: 'Расчёт завершён' },
+      { value: 'finished', label: 'Завершены' },
+      { value: 'declined', label: 'Отклонены' }
+    ];
+  };
+
+  // Функция для получения результата расчёта
+  const getCalculationResult = (item: CurrentCalculation) => {
+    if (item.status === 'completed' || item.status === 'finished') {
+      if (item.total_amperage !== undefined && item.total_amperage !== null) {
+        return `${parseFloat(item.total_amperage.toString()).toFixed(2)} А`;
+      }
+    }
+    return '—';
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '—';
+    try {
+      return new Date(dateString).toLocaleDateString('ru-RU');
+    } catch {
+      return '—';
+    }
+  };
 
   return (
     <div className="moderator-page">
@@ -218,10 +339,17 @@ export default function ModeratorPage() {
           <h1>Панель модератора</h1>
           <p>Управление заявками на расчёт силы тока пользователей</p>
           <div className="current-stats">
-            <span className="stat-item">Всего заявок: {currentCalculations.length}</span>
-            <span className="stat-item">Сформированы: {currentCalculations.filter(c => c.status === 'formed').length}</span>
-            <span className="stat-item">Выполнены: {currentCalculations.filter(c => c.status === 'completed' || c.status === 'finished').length}</span>
+            <span className="stat-item">Всего заявок: {allCalculations.length}</span>
+            <span className="stat-item">Сформированы: {allCalculations.filter(c => c.status === 'formed').length}</span>
+            <span className="stat-item">Выполнены: {allCalculations.filter(c => c.status === 'completed' || c.status === 'finished').length}</span>
           </div>
+          
+          <button 
+            className="btn-filter-toggle"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? 'Скрыть фильтры' : 'Показать фильтры'}
+          </button>
         </div>
 
         {error && (
@@ -230,62 +358,78 @@ export default function ModeratorPage() {
           </div>
         )}
 
-        <div className="moderator-filters">
-          <div className="filter-group">
-            <label>Статус заявки:</label>
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="content-list-section"
-            >
-              <option value="all">Все статусы</option>
-              <option value="formed">Сформированы</option>
-              <option value="completed">Расчёт завершён</option>
-              <option value="finished">Завершены</option>
-              <option value="declined">Отклонены</option>
-            </select>
-          </div>
+        {/* Секция фильтров */}
+        {showFilters && (
+          <div className="moderator-filters-section">
+            <form onSubmit={handleFilterSubmit} className="filters-form">
+              <div className="filter-group">
+                <label>Статус заявки:</label>
+                <select 
+                  value={statusFilter} 
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  {getStatusOptions().map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="filter-group">
-            <label>Дата создания от:</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="content-list-section"
-            />
-          </div>
+              <div className="filter-group">
+                <label>Дата создания от:</label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="filter-input"
+                  max={dateTo || undefined}
+                />
+              </div>
 
-          <div className="filter-group">
-            <label>Дата создания до:</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="content-list-section"
-            />
-          </div>
+              <div className="filter-group">
+                <label>Дата создания до:</label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="filter-input"
+                  min={dateFrom || undefined}
+                />
+              </div>
 
-          <div className="filter-group">
-            <label>Создатель:</label>
-            <input
-              type="text"
-              value={creatorFilter}
-              onChange={(e) => setCreatorFilter(e.target.value)}
-              placeholder="Фильтр по логину пользователя"
-              className="content-list-section"
-            />
-          </div>
+              <div className="filter-group">
+                <label>Создатель:</label>
+                <input
+                  type="text"
+                  value={creatorFilter}
+                  onChange={(e) => setCreatorFilter(e.target.value)}
+                  placeholder="Фильтр по логину пользователя"
+                  className="filter-input"
+                />
+              </div>
 
-          <button onClick={loadCurrentCalculations} className="btn-refresh">
-            Обновить
-          </button>
-        </div>
+              <div className="filter-buttons">
+                <button type="submit" className="btn-primary">
+                  Применить фильтры
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleResetFilters}
+                  className="btn-secondary"
+                >
+                  Сбросить фильтры
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <div className="current-calculations-table-container">
           {loading ? (
             <div className="loading">Загрузка заявок...</div>
-          ) : filteredCalculations.length > 0 ? (
+          ) : displayedCalculations.length > 0 ? (
             <table className="moderator-table">
               <thead>
                 <tr>
@@ -300,7 +444,7 @@ export default function ModeratorPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCalculations.map((current) => (
+                {displayedCalculations.map((current) => (
                   <tr 
                     key={current.current_id}
                     className="clickable-row"
@@ -314,17 +458,11 @@ export default function ModeratorPage() {
                       </span>
                     </td>
                     <td>
-                      {current.total_amperage 
-                        ? `${current.total_amperage} А` 
-                        : (current.status === 'completed' || current.status === 'finished' 
-                          ? 'Рассчитывается...' 
-                          : '—'
-                        )
-                      }
+                      {getCalculationResult(current)}
                     </td>
-                    <td>{new Date(current.created_at).toLocaleDateString('ru-RU')}</td>
-                    <td>{current.form_date ? new Date(current.form_date).toLocaleDateString('ru-RU') : '—'}</td>
-                    <td>{current.finish_date ? new Date(current.finish_date).toLocaleDateString('ru-RU') : '—'}</td>
+                    <td>{formatDate(current.created_at)}</td>
+                    <td>{formatDate(current.form_date || '')}</td>
+                    <td>{formatDate(current.finish_date || '')}</td>
                     <td className="actions-cell" onClick={handleActionClick}>
                       {canChangeStatus(current.status) && (
                         <>
@@ -349,7 +487,21 @@ export default function ModeratorPage() {
             </table>
           ) : (
             <div className="empty-current-calculations">
-              <p>Заявки на расчёт не найдены</p>
+              {allCalculations.length === 0 ? (
+                <>
+                  <p>Заявки на расчёт не найдены</p>
+                </>
+              ) : (
+                <>
+                  <p>Нет заявок, соответствующих фильтрам</p>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={handleResetFilters}
+                  >
+                    Показать все заявки
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -1,0 +1,553 @@
+/* src/pages/ModeratorPage/ModeratorPage.css */
+
+.moderator-page {
+    min-height: 100vh;
+    background-color: #f6f6f6;
+    font-family: BMWTypeNext, sans-serif;
+}
+
+.moderator-page main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* Заголовок и статистика */
+.moderator-header {
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.moderator-header h1 {
+    font-size: 44px;
+    color: #000;
+    font-weight: 100;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.moderator-header p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.current-stats {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    background-color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Сообщения об ошибках */
+.error-message {
+    background: #ffe7e7;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Фильтры */
+.moderator-filters {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 25px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: #1854CD;
+    box-shadow: 0 0 0 3px rgba(24, 84, 205, 0.1);
+}
+
+.filter-group input::placeholder {
+    color: #adb5bd;
+}
+
+.btn-refresh {
+    background: #1854CD;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    height: 40px;
+    align-self: flex-end;
+}
+
+.btn-refresh:hover {
+    background: #1342a8;
+}
+
+/* Контейнер таблицы */
+.current-calculations-table-container {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+/* Загрузка */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    font-size: 18px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Пустое состояние */
+.empty-current-calculations {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-current-calculations p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Таблица */
+.moderator-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.moderator-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.moderator-table th {
+    padding: 18px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    font-size: 15px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.moderator-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.moderator-table tbody tr.clickable-row:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.moderator-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.moderator-table td {
+    padding: 18px 20px;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #333;
+}
+
+.moderator-table .current-id {
+    font-weight: 600;
+    color: #1854CD;
+    font-family: 'Courier New', monospace;
+}
+
+/* Статусы */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    min-width: 120px;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-formed {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed,
+.status-finished {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-rejected,
+.status-declined {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Ячейка с действиями */
+.actions-cell {
+    white-space: nowrap;
+}
+
+.actions-cell button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.actions-cell button:last-child {
+    margin-right: 0;
+}
+
+.btn-approve {
+    background: #28a745;
+    color: white;
+}
+
+.btn-approve:hover {
+    background: #218838;
+}
+
+.btn-reject {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-reject:hover {
+    background: #c82333;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .moderator-page main {
+        max-width: 100%;
+        padding: 20px;
+    }
+    
+    .moderator-filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .moderator-table {
+        font-size: 13px;
+    }
+    
+    .moderator-table th,
+    .moderator-table td {
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .moderator-header h1 {
+        font-size: 32px;
+    }
+    
+    .moderator-header p {
+        font-size: 16px;
+    }
+    
+    .current-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .stat-item {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .moderator-filters {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .moderator-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        min-width: 800px;
+    }
+    
+    .actions-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .actions-cell button {
+        margin-right: 0;
+        width: 100%;
+    }
+    
+    .status-badge {
+        min-width: 100px;
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .moderator-header h1 {
+        font-size: 28px;
+    }
+    
+    .moderator-page main {
+        padding: 15px;
+    }
+    
+    .moderator-filters,
+    .current-calculations-table-container {
+        padding: 15px;
+    }
+    
+    .btn-refresh {
+        width: 100%;
+    }
+}
+
+/* Стили для состояния "Рассчитывается..." */
+.moderator-table td:contains("Рассчитывается...") {
+    color: #ff9800;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Дополнительные стили для улучшения UX */
+.filter-group select,
+.filter-group input {
+    background-color: #f8f9fa;
+}
+
+.filter-group select:hover,
+.filter-group input:hover {
+    background-color: #ffffff;
+}
+
+.moderator-table tbody tr {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для кнопок действий в hover состоянии */
+.moderator-table tbody tr:hover .btn-approve {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+}
+
+.moderator-table tbody tr:hover .btn-reject {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+}
+
+/* Стили для заголовков колонок при скролле */
+.moderator-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Стили для анимации загрузки */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Стили для пустых ячеек */
+.moderator-table td:empty::before {
+    content: "—";
+    color: #adb5bd;
+}
+
+/* Стили для секции фильтров */
+.moderator-filters-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  .btn-filter-toggle {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 10px;
+  }
+  
+  .btn-filter-toggle:hover {
+    background-color: #5a6268;
+  }
+  
+  .btn-primary {
+    background-color: #1854CD;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #1342a8;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  /* Стили для инпутов и селектов фильтров */
+  .filter-select,
+  .filter-input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: white;
+  }
+  
+  .filter-select:focus,
+  .filter-input:focus {
+    outline: none;
+    border-color: #1854CD;
+    box-shadow: 0 0 0 0.2rem rgba(24, 84, 205, 0.25);
+  }
+  
+  .empty-current-calculations {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  
+  .empty-current-calculations p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  /* Убираем старый стиль фильтров */
+  .moderator-filters {
+    display: none;
+  }
+  
+  /* Адаптивность для фильтров */
+  @media (max-width: 768px) {
+    .filters-form {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+      flex-direction: column;
+    }
+  }
