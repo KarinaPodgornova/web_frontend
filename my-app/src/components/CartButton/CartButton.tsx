@@ -4,7 +4,7 @@ import './CartButton.css';
 interface CartButtonProps {
   onClick: () => void;
   count?: number;
-  loading?: boolean; // Добавьте этот пропс
+  loading?: boolean;
 }
 
 export default function CartButton({ onClick, count = 0, loading = false }: CartButtonProps) {
@@ -13,7 +13,7 @@ export default function CartButton({ onClick, count = 0, loading = false }: Cart
       <button 
         className="cart-button" 
         onClick={onClick}
-        disabled={loading} // Добавьте disabled
+        disabled={loading} 
       >
         {loading ? (
           <span className="loading-text">Загрузка...</span>

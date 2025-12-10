@@ -128,7 +128,7 @@ export default function DeviceCard({ device }: { device: Device }) {
                     </div>
                 )}
                 
-                {/* Кнопка Подробнее - теперь первая */}
+            
                 <Link 
                     to={`/devices/${device.device_id}`} 
                     className="add-to-cart"
@@ -136,7 +136,7 @@ export default function DeviceCard({ device }: { device: Device }) {
                     Подробнее
                 </Link>
                 
-                {/* Кнопка добавления в корзину - теперь вторая */}
+         
                 <button 
                     className="add-to-cart"
                     onClick={handleAddToCart}
