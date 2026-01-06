@@ -10,6 +10,7 @@ import Header from '../components/Header/Header';
 import { DEVICES_MOCK } from '../modules/mock';
 import './DevicePage.css';
 import defaultDeviceImage from '../assets/DefaultImage.jpg';
+import { dest_img } from '../modules/target_config';
 
 export default function DevicePage() {
   const [device, setDevice] = useState<Device | null>(null);
@@ -48,7 +49,7 @@ export default function DevicePage() {
 
   const getImageUrl = (filename: string) => {
     if (!filename || imageError) return defaultDeviceImage;
-    return `http://localhost:9000/lab1/img/${filename}`;
+    return `${dest_img}/${filename}`;
 };
 
   const handleImageError = () => {

@@ -17,7 +17,7 @@ function App() {
         <Route path={ROUTES.DEVICES} element={<DevicesPage />} />
         <Route path={ROUTES.DEVICE} element={<DevicePage />} />
 
-   
+
       </Routes>
     </HashRouter>
   );

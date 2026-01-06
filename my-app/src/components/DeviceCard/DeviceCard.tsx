@@ -4,13 +4,14 @@ import type { Device } from "../../modules/DevicesTypes";
 import './DeviceCard.css';
 import { useState, useEffect } from 'react';
 import defaultDeviceImage from '../../assets/DefaultImage.jpg';
+import { dest_img } from '../../modules/target_config';
 
 export default function DeviceCard({ device }: { device: Device }) {
     const [imageError, setImageError] = useState(false);
     
     const getImageUrl = (filename: string) => {
         if (!filename) return defaultDeviceImage;
-        return `http://localhost:9000/lab1/img/${filename}`;
+        return `${dest_img}/${filename}`;
     };
 
     const [imageUrl, setImageUrl] = useState(getImageUrl(device.image));
