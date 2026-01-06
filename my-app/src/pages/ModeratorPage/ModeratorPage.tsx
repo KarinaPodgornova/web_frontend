@@ -35,8 +35,6 @@ export default function ModeratorPage() {
   const [creatorFilter, setCreatorFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const [pollingCount, setPollingCount] = useState(0);
-
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/signin');
@@ -51,12 +49,13 @@ export default function ModeratorPage() {
     
     loadAllCalculations();
     
+    // Short polling - обновляем список каждые 5 секунд для актуальных данных
     const interval = setInterval(() => {
-      setPollingCount(prev => prev + 1);
-    }, 10000);
+      loadAllCalculations();
+    }, 5000);
     
     return () => clearInterval(interval);
-  }, [isAuthenticated, pollingCount, statusFilter, dateFrom, dateTo, creatorFilter]);
+  }, [isAuthenticated, statusFilter, dateFrom, dateTo, creatorFilter]);
 
   // Функция для расчета силы тока из currentDevices
   const calculateAmperageFromCurrentDevices = (currentDevices: any[]) => {
@@ -106,22 +105,23 @@ export default function ModeratorPage() {
       const response = await api.currentCalculations.currentCalculationsList();
       let calculations = [...response.data];
       
-      // Для завершенных заявок загружаем детали и рассчитываем силу тока
+      // Черновики теперь включены в список (убрали фильтр на бэкенде)
+      
+      // Для всех заявок (не только завершенных) загружаем детали и рассчитываем силу тока
+      // Это нужно, чтобы видеть результаты расчетов даже если статус еще не "completed"
       const calculationsWithAmperage = await Promise.all(
         calculations.map(async (item) => {
-          if (item.status === 'completed' || item.status === 'finished') {
-            try {
-              const currentId = item.current_id;
-              if (currentId) {
-                const totalAmperage = await loadCurrentWithAmperage(currentId);
-                return {
-                  ...item,
-                  total_amperage: totalAmperage
-                };
-              }
-            } catch (err) {
-              console.log(`Не удалось загрузить силу тока для заявки ${item.current_id}:`, err);
+          try {
+            const currentId = item.current_id;
+            if (currentId) {
+              const totalAmperage = await loadCurrentWithAmperage(currentId);
+              return {
+                ...item,
+                total_amperage: totalAmperage
+              };
             }
+          } catch (err) {
+            console.log(`Не удалось загрузить силу тока для заявки ${item.current_id}:`, err);
           }
           return item;
         })
@@ -306,10 +306,10 @@ export default function ModeratorPage() {
 
   // Функция для получения результата расчёта
   const getCalculationResult = (item: CurrentCalculation) => {
-    if (item.status === 'completed' || item.status === 'finished') {
-      if (item.total_amperage !== undefined && item.total_amperage !== null) {
-        return `${parseFloat(item.total_amperage.toString()).toFixed(2)} А`;
-      }
+    // Показываем силу тока, если она есть (независимо от статуса)
+    // Это позволяет видеть результаты расчетов даже для заявок со статусом "formed"
+    if (item.total_amperage !== undefined && item.total_amperage !== null && item.total_amperage > 0) {
+      return `${parseFloat(item.total_amperage.toString()).toFixed(2)} А`;
     }
     return '—';
   };
