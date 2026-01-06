@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import DevicesPage from "./pages/DevicesPage/DevicesPage";
 import { ROUTES } from "./Routes";
 import { HomePage } from "./pages/HomePage";
@@ -11,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
   return (
-    <BrowserRouter basename="/web_frontend">
+    <HashRouter>
       <Routes>
         <Route path={ROUTES.HOME} element={<HomePage />} />
         <Route path={ROUTES.DEVICES} element={<DevicesPage />} />
@@ -19,7 +19,7 @@ function App() {
 
    
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

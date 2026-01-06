@@ -2,6 +2,22 @@
 import type { Device } from "./DevicesTypes";
 import { dest_api } from "./target_config";
 
+// Нормализуем поле мощности: backend может вернуть power / powerNominal / power_watts,
+// а фронт ожидает power_nominal. Чтобы не видеть mock-значения, приводим здесь.
+function normalizePower(device: any): Device {
+  const power =
+    device.power_nominal ??
+    device.power ??
+    device.powerNominal ??
+    device.power_watts ??
+    device.powerWatts;
+
+  return {
+    ...device,
+    power_nominal: power ?? device.power_nominal ?? 0,
+  };
+}
+
 export async function listDevices(params?: { device_query?: string }): Promise<Device[]> {
   try {
     let path = "/api/v1/devices";
@@ -27,7 +43,7 @@ export async function listDevices(params?: { device_query?: string }): Promise<D
     
     const data = await res.json();
     console.log('Devices data received:', data); // Отладка
-    return data;
+    return Array.isArray(data) ? data.map(normalizePower) : [];
   } catch (err) {
     console.error("Failed to fetch devices:", err);
     return [];
@@ -53,7 +69,7 @@ export async function getDevice(id: number): Promise<Device | null> {
     
     const data = await res.json();
     console.log('Device data received:', data);
-    return data;
+    return normalizePower(data);
   } catch (err) {
     console.error(`Failed to fetch device ${id}:`, err);
     return null;

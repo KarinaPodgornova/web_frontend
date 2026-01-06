@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({ 
+    VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
@@ -17,7 +17,8 @@ export default defineConfig({
       }
     })
   ],
-  base: '/web_frontend',
+  // Относительная база, чтобы сборка корректно работала и на GitHub Pages, и в Tauri (.app)
+  base: './',
   server: {
     proxy: {
       "/api": {
