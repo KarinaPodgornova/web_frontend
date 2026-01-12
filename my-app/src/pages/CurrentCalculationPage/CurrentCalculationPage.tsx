@@ -245,7 +245,7 @@ export default function CurrentCalculationPage() {
     }));
 
     try {
-      // ИСПРАВЛЕННЫЙ ЭНДПОИНТ! Согласно Go коду: PUT /api/v1/current-devices/{current_id}/{device_id}
+     
       const data = await fetchWithAuth(`/api/v1/current-devices/${currentId}/${deviceId}`, {
         method: "PUT",
         body: JSON.stringify({ amount })
